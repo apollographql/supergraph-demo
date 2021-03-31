@@ -1,0 +1,29 @@
+subgraphs:
+  checkouts:
+    routing_url: https://checkouts.acme.com
+    schema:
+      file: ./checkouts.graphql
+  customers:
+    routing_url: https://customers.acme.com
+    schema:
+      file: ./customers.graphql
+  inventory:
+    routing_url: https://inventory.acme.com
+    schema:
+      file: ./inventory.graphql
+  locations:
+    routing_url: https://locations.acme.com
+    schema:
+      file: ./locations.graphql
+  orders:
+    routing_url: https://orders.acme.com
+    schema:
+      file: ./orders.graphql
+  products:
+    routing_url: https://products.acme.com
+    schema:
+      file: ./products.graphql
+  reviews:
+    routing_url: https://reviews.acme.com
+    schema:
+      file: ./reviews.graphql
