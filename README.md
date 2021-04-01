@@ -1,18 +1,11 @@
 # Supergraph Demo
 
-## Managed Federation
-
+## Local Supergraph Composition
 ```sh
-# pull subgraph schemas with federation enrichments
-make introspect
-
-# publish subgraph schemas to a new federated graph superschema
-make publish
-
+make default
 ```
 
-## Local Supergraph Composition
-
+Which will do the the following:
 ```sh
 # pull subgraph schemas with federation enrichments
 make introspect
@@ -22,5 +15,15 @@ make config
 
 # locally compose a supergraph
 make compose
-
 ```
+
+## Managed Federation
+
+```sh
+# pull subgraph schemas with federation enrichments
+make introspect
+
+# publish subgraph schemas to a federated graph in the registry
+make publish
+```
+
