@@ -1,5 +1,5 @@
 .PHONY: default
-default: config compose
+default: introspect config compose
 
 .PHONY: introspect
 introspect:
