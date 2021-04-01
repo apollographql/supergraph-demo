@@ -15,9 +15,12 @@ make publish
 
 ```sh
 # pull subgraph schemas with federation enrichments
+make introspect
+
+# build a supergraph config file
 make config
 
-# publish subgraph schemas to a new federated graph superschema
+# locally compose a supergraph
 make compose
 
 ```

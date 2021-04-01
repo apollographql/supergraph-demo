@@ -11,10 +11,6 @@ subgraphs:
     routing_url: https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
       file: ./reviews.graphql
-  checkouts:
-    routing_url: https://qg4q5r6zrj.execute-api.us-east-1.amazonaws.com/Prod/graphql
-    schema:
-      file: ./checkouts.graphql
   customers:
     routing_url: https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
