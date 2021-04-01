@@ -1,11 +1,13 @@
 # Supergraph Demo
 
 ## Local Supergraph Composition
+
 ```sh
 make default
 ```
 
 Which will do the the following:
+
 ```sh
 # pull subgraph schemas with federation enrichments
 make introspect
@@ -15,6 +17,12 @@ make config
 
 # locally compose a supergraph
 make compose
+
+# install apollo-server and @apollo/gateway
+make install
+
+# run the Apollo Gateway
+make run
 ```
 
 ## Managed Federation
