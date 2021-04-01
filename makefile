@@ -1,6 +1,10 @@
 .PHONY: default
 default: config compose
 
+.PHONY: introspect
+introspect:
+	.scripts/introspect.sh
+
 .PHONY: config
 config:
 	.scripts/config.sh > supergraph.yaml

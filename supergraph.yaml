@@ -1,29 +1,29 @@
 subgraphs:
-  checkouts:
-    routing_url: https://checkouts.acme.com
-    schema:
-      file: ./checkouts.graphql
-  customers:
-    routing_url: https://customers.acme.com
-    schema:
-      file: ./customers.graphql
-  inventory:
-    routing_url: https://inventory.acme.com
-    schema:
-      file: ./inventory.graphql
-  locations:
-    routing_url: https://locations.acme.com
-    schema:
-      file: ./locations.graphql
   orders:
-    routing_url: https://orders.acme.com
+    routing_url: https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
       file: ./orders.graphql
   products:
-    routing_url: https://products.acme.com
+    routing_url: https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
       file: ./products.graphql
   reviews:
-    routing_url: https://reviews.acme.com
+    routing_url: https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
       file: ./reviews.graphql
+  checkouts:
+    routing_url: https://qg4q5r6zrj.execute-api.us-east-1.amazonaws.com/Prod/graphql
+    schema:
+      file: ./checkouts.graphql
+  customers:
+    routing_url: https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/Prod/graphql
+    schema:
+      file: ./customers.graphql
+  inventory:
+    routing_url: https://2lc1ekf3dd.execute-api.us-east-1.amazonaws.com/Prod/graphql
+    schema:
+      file: ./inventory.graphql
+  locations:
+    routing_url: https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql
+    schema:
+      file: ./locations.graphql

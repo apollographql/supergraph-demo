@@ -5,8 +5,6 @@ source "$(dirname $0)/services.sh"
 echo "subgraphs:"
 for service in ${services[@]}; do
   url="url_$service"
-  echo "  ${service}:"
-  echo "    routing_url: ${!url}"
-  echo "    schema:"
-  echo "      file: ./${service}.graphql"
+  echo "rover subgraph introspect ${!url} > ${service}.graphql"
+  rover subgraph introspect ${!url} > ${service}.graphql
 done
