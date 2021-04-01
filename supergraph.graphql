@@ -1,6 +1,6 @@
 schema
-  @core(feature: "https://lib.apollo.dev/core/v0.1"),
-  @core(feature: "https://lib.apollo.dev/join/v0.1")
+  @core(feature: "https://specs.apollo.dev/core/v0.1"),
+  @core(feature: "https://specs.apollo.dev/join/v0.1")
 {
   query: Query
 }
@@ -18,9 +18,9 @@ directive @join__graph(name: String!, url: String!) on ENUM_VALUE
 type Address
   @join__owner(graph: LOCATIONS)
   @join__type(graph: LOCATIONS, key: "id")
+  @join__type(graph: ORDERS, key: "id")
   @join__type(graph: INVENTORY, key: "id")
   @join__type(graph: CUSTOMERS, key: "id")
-  @join__type(graph: ORDERS, key: "id")
 {
   id: ID! @join__field(graph: LOCATIONS)
   address1: String @join__field(graph: LOCATIONS)
@@ -100,12 +100,12 @@ type Department {
 scalar join__FieldSet
 
 enum join__Graph {
+  ORDERS @join__graph(name: "orders" url: "https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql")
+  PRODUCTS @join__graph(name: "products" url: "https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql")
   INVENTORY @join__graph(name: "inventory" url: "https://2lc1ekf3dd.execute-api.us-east-1.amazonaws.com/Prod/graphql")
   CUSTOMERS @join__graph(name: "customers" url: "https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/Prod/graphql")
-  REVIEWS @join__graph(name: "reviews" url: "https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql")
   LOCATIONS @join__graph(name: "locations" url: "https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql")
-  PRODUCTS @join__graph(name: "products" url: "https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql")
-  ORDERS @join__graph(name: "orders" url: "https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql")
+  REVIEWS @join__graph(name: "reviews" url: "https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql")
 }
 
 type LineItem {
@@ -159,9 +159,9 @@ You will need to define a __resolveReference resolver for the type you define, d
 type Product
   @join__owner(graph: PRODUCTS)
   @join__type(graph: PRODUCTS, key: "id")
+  @join__type(graph: ORDERS, key: "id")
   @join__type(graph: INVENTORY, key: "id")
   @join__type(graph: REVIEWS, key: "id")
-  @join__type(graph: ORDERS, key: "id")
 {
   id: ID! @join__field(graph: PRODUCTS)
   title: String @join__field(graph: PRODUCTS)
@@ -195,10 +195,10 @@ type ProductInventory {
 }
 
 type Query {
-  me: Customer @join__field(graph: CUSTOMERS)
   bestSellers(category: ProductCategory = ALL): [Product] @join__field(graph: PRODUCTS)
   categories: [Department] @join__field(graph: PRODUCTS)
   product(id: ID!): Product @join__field(graph: PRODUCTS)
+  me: Customer @join__field(graph: CUSTOMERS)
 }
 
 """
