@@ -1,5 +1,5 @@
 .PHONY: default
-default: introspect config compose
+default: introspect config compose install run
 
 .PHONY: introspect
 introspect:
@@ -16,3 +16,15 @@ compose:
 .PHONY: publish
 publish:
 	.scripts/publish.sh
+
+.PHONY: install
+install:
+	npm install
+
+.PHONY: run
+run:
+	node index.js
+
+.PHONY: query
+query:
+	.scripts/query.sh
