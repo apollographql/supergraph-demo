@@ -1,3 +1,7 @@
+extend type Address @key(fields: "id") {
+  id: ID! @external
+}
+
 """
 This is an Entity, docs:https://www.apollographql.com/docs/federation/entities/
 You will need to define a __resolveReference resolver for the type you define, docs: https://www.apollographql.com/docs/federation/entities/#resolving
@@ -6,14 +10,9 @@ type Customer @key(fields: "id") {
   id: ID!
   email: String
   contactNumber: String
-  # defaultShippingAddress: Address
 }
 
-extend type Address @key(fields: "id") {
-  id: ID! @external
-}
-
-# TODO: Review where we landed and look into root query/how queries look
 extend type Query {
   me: Customer
 }
+

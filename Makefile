@@ -11,7 +11,7 @@ config:
 
 .PHONY: compose
 compose:
-	rover supergraph compose --config ./supergraph.yaml
+	rover supergraph compose --config ./supergraph.yaml > supergraph.graphql
 
 .PHONY: publish
 publish:

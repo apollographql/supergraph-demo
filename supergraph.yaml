@@ -2,24 +2,24 @@ subgraphs:
   orders:
     routing_url: https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
-      file: ./orders.graphql
+      file: ./subgraphs/orders.graphql
   products:
     routing_url: https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
-      file: ./products.graphql
+      file: ./subgraphs/products.graphql
   reviews:
     routing_url: https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
-      file: ./reviews.graphql
+      file: ./subgraphs/reviews.graphql
   customers:
     routing_url: https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
-      file: ./customers.graphql
+      file: ./subgraphs/customers.graphql
   inventory:
     routing_url: https://2lc1ekf3dd.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
-      file: ./inventory.graphql
+      file: ./subgraphs/inventory.graphql
   locations:
     routing_url: https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql
     schema:
-      file: ./locations.graphql
+      file: ./subgraphs/locations.graphql

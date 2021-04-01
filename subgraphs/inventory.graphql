@@ -1,32 +1,33 @@
-type Warehouse @key(fields: "id") {
-  id: ID!
-  # address: Address
-  aisles: [Aisle]
+extend type Address @key(fields: "id") {
+  id: ID! @external
 }
+
+type Aisle {
+  id: ID!
+  bins: Bin
+}
+
 type ApproxLocation @key(fields: "warehouse { id }") {
   warehouse: Warehouse
   aisle: Int
   bin: Int
   quantityOnHand: Int
 }
-type Aisle {
-  id: ID!
-  bins: Bin
-}
+
 type Bin {
   shelfNumber: Int
   products: ProductInventory
 }
-type ProductInventory {
-  # product: Product
-  quantityOnHand: Int
+
+"""Here are some helpful details about your type"""
+type DeliveryEstimates {
+  estimatedDelivery: String
+  fastestDelivery: String
 }
+
 extend type Order @key(fields: "id") {
   id: ID! @external
   origin: Warehouse
-}
-extend type Address @key(fields: "id") {
-  id: ID! @external
 }
 
 extend type Product @key(fields: "id") {
@@ -34,10 +35,13 @@ extend type Product @key(fields: "id") {
   inventory: Int
   delivery(deliveryZipCode: Int): DeliveryEstimates
 }
-"""
-Here are some helpful details about your type
-"""
-type DeliveryEstimates {
-  estimatedDelivery: String
-  fastestDelivery: String
+
+type ProductInventory {
+  quantityOnHand: Int
 }
+
+type Warehouse @key(fields: "id") {
+  id: ID!
+  aisles: [Aisle]
+}
+

@@ -8,5 +8,5 @@ for service in ${services[@]}; do
   echo "  ${service}:"
   echo "    routing_url: ${!url}"
   echo "    schema:"
-  echo "      file: ./${service}.graphql"
+  echo "      file: ./subgraphs/${service}.graphql"
 done

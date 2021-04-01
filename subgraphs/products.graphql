@@ -1,3 +1,26 @@
+enum CURRENCY_CODE {
+  USD
+}
+
+type Department {
+  category: ProductCategory
+  url: String
+}
+
+type Money {
+  amount: Float
+  currencyCode: CURRENCY_CODE
+}
+
+"""Here are some helpful details about your type"""
+type Price {
+  cost: Money
+
+  """A number between 0 and 1 signifying the % discount"""
+  deal: Float
+  dealSavings: Money
+}
+
 """
 This is an Entity, docs:https://www.apollographql.com/docs/federation/entities/
 You will need to define a __resolveReference resolver for the type you define, docs: https://www.apollographql.com/docs/federation/entities/#resolving
@@ -8,40 +31,12 @@ type Product @key(fields: "id") {
   url: String
   description: String
   price: Price
-
-  # TODO - add commments to get feedback on different patterns here
-  # This could potentially be too expensive to use in a graph strategy
   salesRank(category: ProductCategory = ALL): Int
-
   salesRankOverall: Int
   salesRankInCategory: Int
-
   category: ProductCategory
   images(size: Int = 1000): [String]
   primaryImage(size: Int = 1000): String
-}
-
-"""
-Here are some helpful details about your type
-"""
-type Price {
-  cost: Money
-  """
-  A number between 0 and 1 signifying the % discount
-  """
-  deal: Float
-  dealSavings: Money
-}
-
-extend type Query {
-  bestSellers(category: ProductCategory = ALL): [Product]
-  categories: [Department]
-  product(id: ID!): Product
-}
-
-type Department {
-  category: ProductCategory
-  url: String
 }
 
 enum ProductCategory {
@@ -54,10 +49,9 @@ enum ProductCategory {
   CLOTHING
 }
 
-type Money {
-  amount: Float
-  currencyCode: CURRENCY_CODE
+extend type Query {
+  bestSellers(category: ProductCategory = ALL): [Product]
+  categories: [Department]
+  product(id: ID!): Product
 }
-enum CURRENCY_CODE {
-  USD
-}
+

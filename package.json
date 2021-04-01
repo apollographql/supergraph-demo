@@ -1,0 +1,16 @@
+{
+  "name": "supergraph-gateway",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@apollo/gateway": "0.26.0-alpha.2",
+    "apollo-server": "^2.22.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
