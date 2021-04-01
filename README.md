@@ -21,7 +21,7 @@ make compose
 # install apollo-server and @apollo/gateway
 make install
 
-# run the Apollo Gateway
+# run the Apollo Gateway with local supergraph
 make run
 ```
 
