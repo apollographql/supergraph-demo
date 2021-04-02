@@ -32,3 +32,7 @@ publish:
 .PHONY: run-managed
 run-managed:
 	.scripts/run-managed.sh
+
+.PHONY: check-products
+check-products:
+	.scripts/check-products.sh

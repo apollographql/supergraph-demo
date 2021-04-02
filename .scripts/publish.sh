@@ -13,6 +13,6 @@ fi
 echo "subgraphs:"
 for service in ${services[@]}; do
   url="url_$service"
-  echo "rover subgraph publish ${graph} -demo --routing-url ${!url} --schema subgraphs/${service}.graphql --name ${service}"
+  echo "rover subgraph publish ${graph} --routing-url ${!url} --schema subgraphs/${service}.graphql --name ${service}"
   rover subgraph publish ${graph} --routing-url ${!url} --schema subgraphs/${service}.graphql --name ${service}
 done
