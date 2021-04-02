@@ -144,7 +144,7 @@ Make a query in a separate terminal session:
 make query
 ```
 
-## Help teams ship faster without breaking changes
+## Ship Faster Without Breaking Changes
 
 Apollo Schema Checks help ensure subgraph changes don't break the federated graph, reducing downtime and enabling teams to ship faster.
 
@@ -193,6 +193,8 @@ you'll get the following:
 Checked the proposed subgraph against supergraph-demo@current
 There were no changes detected in the composed schema.
 ```
+
+## Learn More
 
 Apollo tools and services help you develop, maintain, operate, and scale your data graph.
 
