@@ -24,7 +24,7 @@ the machinery to power a graph router at runtime. The supergraph schema
 includes directives like `join` that instruct a graph router how federate
 multiple subgraphs into a single graph for consumers to use.
 
-![Apollo Federation with Supergraphs](docs/media/supergraph.png)
+![Apollo Federation with Supergraphs](supergraph.png)
 
 ## Prerequisites
 
