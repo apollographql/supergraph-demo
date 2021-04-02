@@ -13,6 +13,6 @@ echo "APOLLO_KEY=<REDACTED>"
 echo "APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/"
 echo "node index.js managed"
 
-APOLLO_KEY=service:${key} \
+APOLLO_KEY=${key} \
 APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/ \
 node index.js managed
