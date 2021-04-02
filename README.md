@@ -76,7 +76,7 @@ make install
 make run
 ```
 
-which shows the following:
+which shows:
 
 ```
 node index.js local
@@ -169,14 +169,16 @@ The gateway for the 'supergraph-demo' graph was updated with a new schema, compo
 Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the subgraphs it's composed from:
 ![Federated Graph in Apollo Studio](docs/media/studio.png)
 
-Now we can deploy an Apollo Gateway using Managed Federation:
+Note: you have to enable `Preview Features` in [personal settings](https://studio.apollographql.com/user-settings) for supergraph schema to show up in the SDL tab.
+
+Now we can run an Apollo Gateway using Managed Federation:
 
 ```sh
 # run the Apollo Gateway with to pull a managed supergraph from an Uplink to the Apollo Registry
 make run-managed
 ```
 
-which shows the following:
+which shows:
 
 ```
 Go to your graph settings in https://studio.apollographql.com/
@@ -232,7 +234,7 @@ Compared 3 schema changes against 2 operations
 └────────┴─────────────────────────┴──────────────────────────────────────────┘
 ```
 
-If you publish the changes, and rerun the check:
+Then `publish` the changes and `check` again:
 
 ```sh
 make publish
@@ -240,9 +242,9 @@ make publish
 make check-products
 ```
 
-you'll get the following:
+which shows:
 
-```sh
+```
 Checked the proposed subgraph against supergraph-demo@current
 There were no changes detected in the composed schema.
 ```
