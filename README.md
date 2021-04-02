@@ -1,5 +1,9 @@
 # Supergraph Preview Demo
 
+Moving from dynamic composition to static composition with supergraphs.
+
+## Welcome
+
 Apollo Federation and Managed Federation have delivered significant
 improvements over schema stitching and alternate approaches. Static
 composition introduces another big step forward as we move composition out of
@@ -19,6 +23,8 @@ build-time resulting in a static artifact (supergraph schema) that describes
 the machinery to power a graph router at runtime. The supergraph schema
 includes directives like `join` that instruct a graph router how federate
 multiple subgraphs into a single graph for consumers to use.
+
+![Apollo Federation with Supergraphs](docs/media/supergraph.png)
 
 ## Prerequisites
 
