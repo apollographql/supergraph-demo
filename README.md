@@ -1,4 +1,4 @@
-# Supergraph Preview
+# Supergraph Preview Demo
 
 Apollo Federation and Managed Federation have delivered significant
 improvements over schema stitching and alternate approaches. Static
@@ -20,7 +20,7 @@ the machinery to power a graph router at runtime. The supergraph schema
 includes directives like `join` that instruct a graph router how federate
 multiple subgraphs into a single graph for consumers to use.
 
-## Demo Prerequisites
+## Prerequisites
 
 You'll need to [download and
 install](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
@@ -78,7 +78,7 @@ make query
 
 which issues the following query:
 
-```js
+```ts
 {
   query: {
     bestSellers: { title }
@@ -88,11 +88,11 @@ which issues the following query:
 
 and returns this result:
 
-```js
+```ts
 {
   data: {
     bestSellers:[
-      { title: "adidas Yeezy 700 V3 Kyanite" }
+      { title: "adidas Yeezy 700 V3 Kyanite" },
       { title: "Jordan 5 Retro Change The World" }
     ]
   }
