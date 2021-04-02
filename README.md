@@ -24,7 +24,7 @@ the machinery to power a graph router at runtime. The supergraph schema
 includes directives like `join` that instruct a graph router how federate
 multiple subgraphs into a single graph for consumers to use.
 
-![Apollo Federation with Supergraphs](supergraph.png)
+![Apollo Federation with Supergraphs](docs/media/supergraph.png)
 
 ## Prerequisites
 
@@ -76,6 +76,15 @@ make install
 make run
 ```
 
+which shows the following:
+
+```
+node index.js local
+Starting Apollo Gateway in local mode ...
+Using local: ./supergraph.graphql
+🚀 Server ready at http://localhost:4000/
+```
+
 Then issue a GraphQL Query in a separate terminal session:
 
 ```sh
@@ -117,7 +126,7 @@ To get started with Managed Federation, create your Apollo account:
 
 Create a `Graph` of type `Deployed` with the `Federation` option.
 
-Configure `rover` to use connect to your account:
+Configure `rover` to connect to your account:
 
 ```sh
 rover config auth
@@ -130,12 +139,56 @@ If you don't already have the subgraph schemas:
 make introspect
 ```
 
+Then publish your subgraphs to your new `Federated` graph in the Apollo Registry:
+
 ```sh
 # publish subgraph schemas to a federated graph in the registry, for composition into a managed supergraph
 make publish
+```
 
-# run the Apollo Gateway with a managed supergraph pulled from an Uplink to the Apollo Registry
+Interim composition errors may surface as each subgraph is published:
+
+```
+rover subgraph publish supergraph-demo --routing-url https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql --schema subgraphs/orders.graphql --name orders
+
+Publishing SDL to supergraph-demo:current (subgraph: orders) using credentials from the default profile.
+error: We are unable to run composition for your graph because a subgraph contains an extend declaration for the type 'Product' which does not exist in any subgraph.
+```
+
+However once all subgraphs are published the supergraph will be updated, for example: 
+
+```
+rover subgraph publish supergraph-demo --routing-url https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql --schema subgraphs/locations.graphql --name locations
+
+Publishing SDL to supergraph-demo:current (subgraph: locations) using credentials from the default profile.
+A new subgraph called 'locations' for the 'supergraph-demo' graph was created
+
+The gateway for the 'supergraph-demo' graph was updated with a new schema, composed from the updated 'locations' subgraph
+```
+
+Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the subgraphs it's composed from:
+![Federated Graph in Apollo Studio](docs/media/studio.png)
+
+Now we can deploy an Apollo Gateway using Managed Federation:
+
+```sh
+# run the Apollo Gateway with to pull a managed supergraph from an Uplink to the Apollo Registry
 make run-managed
+```
+
+which shows the following:
+
+```
+Go to your graph settings in https://studio.apollographql.com/
+then create a Graph API Key and enter it at the prompt below.
+> 
+APOLLO_KEY=<REDACTED>
+APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
+node index.js managed
+Starting Apollo Gateway in managed mode ...
+No graph variant provided. Defaulting to `current`.
+Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-preview/?variant=current
+🚀 Server ready at http://localhost:4000/
 ```
 
 Make a query in a separate terminal session:
