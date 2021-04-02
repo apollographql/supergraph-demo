@@ -102,7 +102,7 @@ make query
 
 Apollo Schema Checks help ensure subgraph changes don't break the federated graph, reducing downtime and enabling teams to ship faster.
 
-To simulate a breaking change, add an `enum` to `.subgraphs/products.graphql`:
+To simulate a breaking change, remove the `Color` `enum` from `.subgraphs/products.graphql`:
 ```ts
 enum Color {
   BLUE
@@ -110,15 +110,7 @@ enum Color {
 }
 ```
 
-then publish it, so it's in the registry as the current schema:
-
-```sh
-make publish
-```
-
-Then to simulate a potentially breaking change, remove the `enum` from `.subgraphs/products.graphql`.
-
-but do a schema `check` before you `publish` it:
+Then do a schema `check` before you `publish` it:
 
 ```sh
 make check-products
@@ -155,6 +147,4 @@ Checked the proposed subgraph against supergraph-demo@current
 There were no changes detected in the composed schema.
 ```
 
-Learn more about schema checks and how Apollo can help your teams ship faster here:
-
-https://www.apollographql.com/docs/studio/
+Learn more about schema checks and how Apollo can help your teams ship faster here: https://www.apollographql.com/docs/studio/.

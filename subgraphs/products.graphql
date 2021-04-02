@@ -39,6 +39,11 @@ type Product @key(fields: "id") {
   primaryImage(size: Int = 1000): String
 }
 
+enum Color {
+  BLUE
+  GREEN
+}
+
 enum ProductCategory {
   ALL
   GIFT_CARDS
