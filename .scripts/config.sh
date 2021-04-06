@@ -1,12 +1,12 @@
 #!/bin/bash
 
-source "$(dirname $0)/services.sh"
+source "$(dirname $0)/subgraphs.sh"
 
 echo "subgraphs:"
-for service in ${services[@]}; do
-  url="url_$service"
-  echo "  ${service}:"
+for subgraph in ${subgraphs[@]}; do
+  url="url_$subgraph"
+  echo "  ${subgraph}:"
   echo "    routing_url: ${!url}"
   echo "    schema:"
-  echo "      file: ./subgraphs/${service}.graphql"
+  echo "      file: ./subgraphs/${subgraph}.graphql"
 done
