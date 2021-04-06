@@ -1,5 +1,11 @@
 .PHONY: default
-default: introspect config compose install run
+default: local
+
+.PHONY: local
+local: introspect config compose install run
+
+.PHONY: managed
+managed: introspect publish install run-managed
 
 .PHONY: introspect
 introspect:
