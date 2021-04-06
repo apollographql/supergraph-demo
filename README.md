@@ -54,7 +54,7 @@ curl -sSL https://raw.githubusercontent.com/apollographql/rover/v0.0.7/installer
 You can federate multiple subgraphs into a supergraph using:
 
 ```sh
-make default
+make local
 ```
 
 Which will do the the following:
@@ -174,6 +174,9 @@ Note: you have to enable `Preview Features` in [personal settings](https://studi
 Now we can run an Apollo Gateway using Managed Federation:
 
 ```sh
+# install apollo-server and @apollo/gateway
+make install
+
 # run the Apollo Gateway with to pull a managed supergraph from an Uplink to the Apollo Registry
 make run-managed
 ```
@@ -203,7 +206,7 @@ make query
 
 Apollo Schema Checks help ensure subgraph changes don't break the federated graph, reducing downtime and enabling teams to ship faster.
 
-To simulate a breaking change, remove the `Color` `enum` from `.subgraphs/products.graphql`:
+To simulate a breaking change, add a `Color` `enum` to `.subgraphs/products.graphql`:
 
 ```ts
 enum Color {
@@ -212,7 +215,22 @@ enum Color {
 }
 ```
 
-Then do a schema `check` before you `publish` it:
+Then `publish` the changes to the registry:
+
+```sh
+make publish
+```
+
+Then remove the `Color` `enum` from `.subgraphs/products.graphql`:
+
+```ts
+enum Color {
+  BLUE
+  GREEN
+}
+```
+
+and do a schema `check` against the published version in the registry:
 
 ```sh
 make check-products
