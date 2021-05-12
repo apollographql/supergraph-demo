@@ -26,6 +26,8 @@ multiple subgraphs into a single graph for consumers to use.
 
 ![Apollo Federation with Supergraphs](docs/media/supergraph.png)
 
+See also: [New Federation UX - Preview Docs](https://www.apollographql.com/docs/federation/quickstart/)
+
 ## Prerequisites
 
 You'll need to [download and
