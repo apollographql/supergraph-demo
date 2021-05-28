@@ -1,6 +1,6 @@
 #!/bin/bash 
  
-source "$(dirname $0)/services.sh"
+source "$(dirname $0)/subgraphs.sh"
 
 echo "Go to your graph settings in https://studio.apollographql.com/"
 echo "then copy your Graph ID and enter it at the prompt below."
