@@ -36,7 +36,7 @@ smoke:
 	.scripts/smoke.sh
 
 .PHONY: dep-act
-act:
+dep-act:
 	curl https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s v0.2.21
 
 .PHONY: dep-act act
