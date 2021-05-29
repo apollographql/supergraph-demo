@@ -1,0 +1,36 @@
+name: smoke test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-18.04
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: use node ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: install rover
+        run: |
+          curl -sSL https://rover.apollo.dev/nix/v0.1.5 | sh
+          echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
+      - name: rover subgraph introspect
+        run: make introspect
+      - name: supergraph config
+        run: make config
+      - name: rover supergraph compose
+        run: make compose
+      - name: npm install
+        run: make install
+      - name: smoke test
+        run: make smoke

@@ -31,6 +31,26 @@ run:
 query:
 	.scripts/query.sh
 
+.PHONY: smoke
+smoke:
+	.scripts/smoke.sh
+
+.PHONY: dep-act
+act:
+	curl https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s v0.2.21
+
+.PHONY: dep-act act
+act:
+	act
+
+.PHONY: dep-act act-medium
+act-medium:
+	act -P ubuntu-18.04=catthehacker/ubuntu:act-18.04
+
+.PHONY: dep-act act-large-gh-parity
+act-large-gh-parity:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04
+
 .PHONY: publish
 publish:
 	.scripts/publish.sh
