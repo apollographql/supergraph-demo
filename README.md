@@ -51,7 +51,7 @@ nvm install 14.16.0
 You'll also need `rover` [our new CLI](https://www.apollographql.com/docs/rover/getting-started) for managing and maintaining data graphs.
 
 ```sh
-curl -sSL https://raw.githubusercontent.com/apollographql/rover/v0.0.7/installers/binstall/scripts/nix/install.sh | sh
+curl -sSL https://rover.apollo.dev/nix/latest | sh
 ```
 
 ## Local Supergraph Composition
