@@ -1,7 +1,8 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    versioning-strategy: lockfile-only
     directory: /
     schedule:
       interval: daily
+    assignees:
+      - prasek
