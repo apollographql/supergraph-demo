@@ -1,4 +1,4 @@
-# Supergraph Preview Demo
+# Supergraph Demo
 
 ![smoke test](https://github.com/apollographql/supergraph-demo/actions/workflows/smoke.yaml/badge.svg)
 ![dependencies](https://img.shields.io/david/apollographql/supergraph-demo)
@@ -29,7 +29,7 @@ multiple subgraphs into a single graph for consumers to use.
 
 ![Apollo Federation with Supergraphs](docs/media/supergraph.png)
 
-See also: [New Federation UX - Preview Docs](https://www.apollographql.com/docs/federation/quickstart/)
+See also: [New Federation UX - Docs](https://www.apollographql.com/docs/federation/quickstart/)
 
 ## Prerequisites
 
@@ -174,8 +174,6 @@ The gateway for the 'supergraph-demo' graph was updated with a new schema, compo
 Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the subgraphs it's composed from:
 ![Federated Graph in Apollo Studio](docs/media/studio.png)
 
-Note: you have to enable `Preview Features` in [personal settings](https://studio.apollographql.com/user-settings) for supergraph schema to show up in the SDL tab.
-
 Now we can run an Apollo Gateway using Managed Federation:
 
 ```sh
@@ -197,7 +195,7 @@ APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
 node index.js managed
 Starting Apollo Gateway in managed mode ...
 No graph variant provided. Defaulting to `current`.
-Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-preview/?variant=current
+Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-demo/?variant=current
 🚀 Server ready at http://localhost:4000/
 ```
 
