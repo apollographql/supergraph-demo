@@ -1,7 +1,7 @@
 # Supergraph Demo
 
 ![smoke test](https://github.com/apollographql/supergraph-demo/actions/workflows/smoke.yaml/badge.svg)
-![dependencies](https://img.shields.io/david/apollographql/supergraph-demo)
+![dependencies](https://badgen.net/david/dep/apollographql/supergraph-demo)
 
 Moving from dynamic composition to static composition with supergraphs.
 
