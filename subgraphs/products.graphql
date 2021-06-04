@@ -54,4 +54,3 @@ extend type Query {
   categories: [Department]
   product(id: ID!): Product
 }
-

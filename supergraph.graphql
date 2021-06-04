@@ -100,11 +100,11 @@ type Department {
 scalar join__FieldSet
 
 enum join__Graph {
-  PRODUCTS @join__graph(name: "products" url: "https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql")
   CUSTOMERS @join__graph(name: "customers" url: "https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/Prod/graphql")
-  LOCATIONS @join__graph(name: "locations" url: "https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql")
   INVENTORY @join__graph(name: "inventory" url: "https://2lc1ekf3dd.execute-api.us-east-1.amazonaws.com/Prod/graphql")
+  LOCATIONS @join__graph(name: "locations" url: "https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql")
   ORDERS @join__graph(name: "orders" url: "https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql")
+  PRODUCTS @join__graph(name: "products" url: "https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql")
   REVIEWS @join__graph(name: "reviews" url: "https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql")
 }
 
@@ -195,10 +195,10 @@ type ProductInventory {
 }
 
 type Query {
+  me: Customer @join__field(graph: CUSTOMERS)
   bestSellers(category: ProductCategory = ALL): [Product] @join__field(graph: PRODUCTS)
   categories: [Department] @join__field(graph: PRODUCTS)
   product(id: ID!): Product @join__field(graph: PRODUCTS)
-  me: Customer @join__field(graph: CUSTOMERS)
 }
 
 """
@@ -227,4 +227,3 @@ type Warehouse
   id: ID! @join__field(graph: INVENTORY)
   aisles: [Aisle] @join__field(graph: INVENTORY)
 }
-

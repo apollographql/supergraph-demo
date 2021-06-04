@@ -1,11 +1,13 @@
 #!/bin/bash
 
-node index.js local &
+PORT="${1:-4000}"
+
+node index.js local $PORT &
 sleep 2
-ACT=`.scripts/query.sh`
+ACT=`.scripts/query.sh $PORT`
 EXP='{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}'
 echo $ACT
-kill -9 `lsof -i:4000 -t`
+kill -9 `lsof -i:$PORT -t`
 if [ "$ACT" = "$EXP" ]; then
     echo "Success!"
 else
