@@ -9,12 +9,12 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-18.04
-
     strategy:
       matrix:
-        node-version: [14.x]
+        include:
+          - node-version: 14.x
+            rover-version: "v0.1.5"
 
     steps:
       - uses: actions/checkout@v2
@@ -23,8 +23,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: install rover
+        env:
+          ROVER_VERSION: ${{ matrix.rover-version }}
         run: |
-          curl -sSL https://rover.apollo.dev/nix/v0.1.5 | sh
+          curl -sSL https://rover.apollo.dev/nix/$ROVER_VERSION | sh
           echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
       - name: rover subgraph introspect
         run: make introspect
