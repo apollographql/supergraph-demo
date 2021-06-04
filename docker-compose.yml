@@ -1,0 +1,7 @@
+version: '3'
+services:
+  web:
+    container_name: graph-router
+    build: .
+    ports:
+      - "4000:4000"
