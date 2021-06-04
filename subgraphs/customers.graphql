@@ -15,4 +15,3 @@ type Customer @key(fields: "id") {
 extend type Query {
   me: Customer
 }
-

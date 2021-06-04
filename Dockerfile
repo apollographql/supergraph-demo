@@ -2,10 +2,11 @@ from node:14
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+COPY package.json ./
 
 RUN npm install
 
-COPY . .
+COPY index.js .
+COPY supergraph.graphql .
 
 CMD [ "node", "index.js", "local"]

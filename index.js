@@ -4,6 +4,7 @@ const { readFileSync } = require('fs');
 
 const args = process.argv.slice(2);
 const mode = args[0]
+const port = args[1] ? args[1] : 4000
 
 console.log(`Starting Apollo Gateway in ${mode} mode ...`);
 
@@ -23,6 +24,6 @@ const server = new ApolloServer({
   subscriptions: false
 });
 
-server.listen().then(({ url }) => {
+server.listen( {port: port} ).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
 }).catch(err => {console.error(err)});

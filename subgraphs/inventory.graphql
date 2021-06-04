@@ -44,4 +44,3 @@ type Warehouse @key(fields: "id") {
   id: ID!
   aisles: [Aisle]
 }
-

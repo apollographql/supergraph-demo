@@ -55,4 +55,3 @@ extend type Product @key(fields: "id") {
 extend type Warehouse @key(fields: "id") {
   id: ID! @external
 }
-
