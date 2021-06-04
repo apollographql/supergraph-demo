@@ -4,8 +4,22 @@ default: local
 .PHONY: local
 local: introspect config compose install run
 
+.PHONY: demo
+demo: introspect config compose install smoke
+
 .PHONY: managed
 managed: introspect publish install run-managed
+
+.PHONY: docker
+docker: docker-build docker-run
+
+.PHONY: docker-build
+docker-build: introspect config compose
+	docker build -t my/supergraph-demo .
+
+.PHONY: docker-run
+docker-run:
+	docker run --rm -p 4000:4000 my/supergraph-demo
 
 .PHONY: introspect
 introspect:
