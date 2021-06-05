@@ -1,6 +1,6 @@
 # Supergraph Demo
 
-![smoke test](https://github.com/apollographql/supergraph-demo/actions/workflows/main.yaml/badge.svg)
+![smoke test](https://github.com/apollographql/supergraph-demo/actions/workflows/main.yml/badge.svg)
 ![dependencies](https://badgen.net/github/dependabot/apollographql/supergraph-demo)
 
 Moving from dynamic composition to static composition with supergraphs.
@@ -33,23 +33,12 @@ See also: [New Federation UX - Docs](https://www.apollographql.com/docs/federati
 
 ## Prerequisites
 
-You'll need to [download and
-install](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
-`node` and `npm`, using a node version manager like
-[nvm](https://github.com/nvm-sh/nvm#about):
+You'll need:
+* [docker](https://docs.docker.com/get-docker/)
+* [docker-compose](https://docs.docker.com/compose/install/)
+* `rover` [our new CLI](https://www.apollographql.com/docs/rover/getting-started) for managing and maintaining data graphs.
 
-```sh
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-```
-
-Then install `node` 14:
-
-```sh
-nvm install 14.16.0
-```
-
-You'll also need `rover` [our new CLI](https://www.apollographql.com/docs/rover/getting-started) for managing and maintaining data graphs.
-
+To install 'rover':
 ```sh
 curl -sSL https://rover.apollo.dev/nix/latest | sh
 ```
@@ -59,7 +48,7 @@ curl -sSL https://rover.apollo.dev/nix/latest | sh
 You can federate multiple subgraphs into a supergraph using:
 
 ```sh
-make local
+make demo
 ```
 
 Which will do the the following:
@@ -67,30 +56,57 @@ Which will do the the following:
 ```sh
 # pull subgraph schemas with federation enrichments
 make introspect
+```
 
+which gets the subgraph schemas from all subgraph servers:
+```
+rover subgraph introspect https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/orders.graphql
+rover subgraph introspect https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/products.graphql
+rover subgraph introspect https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/reviews.graphql
+rover subgraph introspect https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/customers.graphql
+rover subgraph introspect https://2lc1ekf3dd.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/inventory.graphql
+rover subgraph introspect https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/locations.graphql
+```
+
+```sh
 # build a supergraph config file
 make config
+```
 
+which creates a supergraph.yaml config:
+```
+.scripts/config.sh > supergraph.yaml
+```
+
+```sh
 # locally compose a supergraph
 make compose
+```
 
-# install apollo-server and @apollo/gateway
-make install
+which composes a supergraph schema:
+```
+rover supergraph compose --config ./supergraph.yaml > supergraph.graphql
+```
 
-# run the Apollo Gateway with local supergraph
-make run
+and the graph-router continaer is started:
+
+```
+make docker-up
 ```
 
 which shows:
 
 ```
-node index.js local
+docker-compose up -d
+Creating network "supergraph-demo_default" with the default driver
+Creating graph-router ... done
+
 Starting Apollo Gateway in local mode ...
 Using local: ./supergraph.graphql
 🚀 Server ready at http://localhost:4000/
 ```
 
-Then issue a GraphQL Query in a separate terminal session:
+`make demo` then issues a curl request to the graph router
 
 ```sh
 make query
@@ -119,6 +135,12 @@ and returns this result:
 }
 ```
 
+and finally `make demo` shuts down graph-router, with:
+
+```sh
+make docker-down
+```
+
 ## Managed Federation
 
 Managed Federation enables teams to independently publish subgraphs to the Apollo Registry, so they can be automatically composed into a supergraph for apps to use.
@@ -131,20 +153,24 @@ To get started with Managed Federation, create your Apollo account:
 
 Create a `Graph` of type `Deployed` with the `Federation` option.
 
-Configure `rover` to connect to your account:
+Create and environment variables file with APOLLO_KEY using:
 
 ```sh
-rover config auth
+make graph-api-env
 ```
 
-If you don't already have the subgraph schemas:
+Then run the Managed Federation demo:
+```sh
+make demo-managed
+```
 
+Which does the following:
 ```sh
 # pull subgraph schemas with federation enrichments
 make introspect
 ```
 
-Then publish your subgraphs to your new `Federated` graph in the Apollo Registry:
+Publish your subgraphs to your new `Federated` graph in the Apollo Registry:
 
 ```sh
 # publish subgraph schemas to a federated graph in the registry, for composition into a managed supergraph
@@ -174,35 +200,66 @@ The gateway for the 'supergraph-demo' graph was updated with a new schema, compo
 Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the subgraphs it's composed from:
 ![Federated Graph in Apollo Studio](docs/media/studio.png)
 
-Now we can run an Apollo Gateway using Managed Federation:
-
-```sh
-# install apollo-server and @apollo/gateway
-make install
-
-# run the Apollo Gateway with to pull a managed supergraph from an Uplink to the Apollo Registry
-make run-managed
+and finally the graph-router container is started
+```
+make docker-up-managed
 ```
 
 which shows:
 
 ```
-Go to your graph settings in https://studio.apollographql.com/
-then create a Graph API Key and enter it at the prompt below.
-> 
-APOLLO_KEY=<REDACTED>
-APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
-node index.js managed
+docker-compose -f docker-compose.managed.yml up -d
+Creating network "supergraph-demo_default" with the default driver
+Creating graph-router ... done
 Starting Apollo Gateway in managed mode ...
-No graph variant provided. Defaulting to `current`.
-Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-demo/?variant=current
+Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-preview@current/
 🚀 Server ready at http://localhost:4000/
 ```
 
-Make a query in a separate terminal session:
+`make demo` then issues a curl request to the graph router
 
 ```sh
 make query
+```
+
+which issues the following query:
+
+```ts
+{
+  query: {
+    bestSellers: { title }
+  }
+}
+```
+
+and returns this result:
+
+```ts
+{
+  data: {
+    bestSellers:[
+      { title: "adidas Yeezy 700 V3 Kyanite" },
+      { title: "Jordan 5 Retro Change The World" }
+    ]
+  }
+}
+```
+
+and finally `make demo` shuts down the graph router, with:
+
+```sh
+make docker-down
+```
+
+With Managed Federation you can leave your graph-router running and it will
+update automatically when new subgraphs are published and successfully compose
+and pass all schema check:
+
+```
+make docker-up-managed
+Starting Apollo Gateway in managed mode ...
+Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-preview@current/
+🚀 Server ready at http://localhost:4000/
 ```
 
 ## Ship Faster Without Breaking Changes
