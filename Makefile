@@ -1,25 +1,17 @@
 .PHONY: default
 default: local
 
+.PHONY: supergraph
+supergraph: introspect config compose
+
 .PHONY: local
-local: introspect config compose install run
+local: supergraph install run
 
 .PHONY: demo
-demo: introspect config compose install smoke
+demo: docker-up smoke docker-down
 
 .PHONY: managed
 managed: introspect publish install run-managed
-
-.PHONY: docker
-docker: docker-build docker-run
-
-.PHONY: docker-build
-docker-build: introspect config compose
-	docker build -t my/supergraph-demo .
-
-.PHONY: docker-run
-docker-run:
-	docker run --rm -p 4000:4000 my/supergraph-demo
 
 .PHONY: introspect
 introspect:
@@ -41,29 +33,64 @@ install:
 run:
 	node index.js local
 
+.PHONY: ci-local
+ci-local:
+	.scripts/ci-local.sh
+
+.PHONY: docker-up
+docker-up: supergraph
+	docker compose up -d
+	@sleep 2
+	@docker logs graph-router
+
 .PHONY: query
 query:
-	.scripts/query.sh
+	@.scripts/query.sh
 
 .PHONY: smoke
 smoke:
-	.scripts/smoke.sh
+	@.scripts/smoke.sh
+
+.PHONY: docker-down
+docker-down:
+	docker compose down
+
+.PHONY: docker
+docker: docker-build docker-run
+
+.PHONY: docker-build
+docker-build: supergraph
+	docker build -t my/supergraph-demo .
+
+.PHONY: docker-run
+docker-run:
+	docker run --rm -d --name=gateway -p 4000:4000 my/supergraph-demo
+	@sleep 2
+	docker logs gateway
+
+.PHONY: docker-stop
+docker-stop:
+	docker kill gateway
+
+.PHONY: ci-docker
+ci-docker:
+	.scripts/ci-docker.sh
 
 .PHONY: dep-act
 dep-act:
 	curl https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s v0.2.21
 
-.PHONY: dep-act act
+.PHONY: act
 act:
-	act
-
-.PHONY: dep-act act-medium
-act-medium:
-	act -P ubuntu-18.04=catthehacker/ubuntu:act-18.04
-
-.PHONY: dep-act act-large-gh-parity
-act-large-gh-parity:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04
+
+.PHONY: act-main
+act-medium:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/main.yml
+
+.PHONY: act-docker
+act-docker:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/docker.yml
 
 .PHONY: publish
 publish:

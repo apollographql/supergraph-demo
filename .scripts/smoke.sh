@@ -2,12 +2,11 @@
 
 PORT="${1:-4000}"
 
-node index.js local $PORT &
 sleep 2
+echo Smoke test
 ACT=`.scripts/query.sh $PORT`
 EXP='{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}'
 echo $ACT
-kill -9 `lsof -i:$PORT -t`
 if [ "$ACT" = "$EXP" ]; then
     echo "Success!"
 else

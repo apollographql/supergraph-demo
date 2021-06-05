@@ -8,17 +8,17 @@ on:
     - cron: '30 7,19 * * *'
 
 jobs:
-  build:
+  smoke:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
         include:
           - node-version: 12.x
             rover-version: "v0.1.5"
-            gateway-port: 4000
+            gateway-port: 4001
           - node-version: 14.x
             rover-version: "latest"
-            gateway-port: 4001
+            gateway-port: 4002
 
     steps:
       - uses: actions/checkout@v2
@@ -43,4 +43,15 @@ jobs:
       - name: smoke test
         env:
           GATEWAY_PORT: ${{ matrix.gateway-port }}
-        run: .scripts/smoke.sh $GATEWAY_PORT
+        run: .scripts/ci-local.sh $GATEWAY_PORT
+  docker:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Start stack
+        run: docker-compose up -d
+      - name: smoke test
+        run: .scripts/smoke.sh 4000
+      - name: Stop stack
+        run: docker-compose down
