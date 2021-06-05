@@ -88,7 +88,7 @@ which composes a supergraph schema:
 rover supergraph compose --config ./supergraph.yaml > supergraph.graphql
 ```
 
-and the graph-router continaer is started:
+and the graph-router container is started:
 
 ```
 make docker-up
