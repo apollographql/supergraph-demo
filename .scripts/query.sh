@@ -2,7 +2,8 @@
 
 PORT="${1:-4000}"
 
-curl -X POST \
--H "Content-Type: application/json" \
---data '{ "query": "{ bestSellers { title } } " }' \
-http://localhost:$PORT/
+CURL="curl -X POST -H \"Content-Type: application/json\" --data '{ \"query\": \"{ bestSellers { title } } \" }' http://localhost:$PORT/"
+
+echo $CURL
+
+bash -c "$CURL"

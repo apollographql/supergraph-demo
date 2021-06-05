@@ -1,14 +1,8 @@
 #!/bin/bash 
  
 source "$(dirname $0)/subgraphs.sh"
-
-echo "Go to your graph settings in https://studio.apollographql.com/"
-echo "then copy your Graph ID and enter it at the prompt below."
-read -p "> " graph
-if [[ -z "$graph" ]]; then
-    >&2 echo "Error: no graph ID specified."
-    exit 1
-fi
+source "$(dirname $0)/get-env.sh"
+source "$(dirname $0)/get-graph-id.sh"
 
 echo "subgraphs:"
 for subgraph in ${subgraphs[@]}; do

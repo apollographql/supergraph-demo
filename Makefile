@@ -1,17 +1,28 @@
 .PHONY: default
-default: local
+default: demo
+
+.PHONY: demo
+demo: supergraph docker-up query docker-down
+
+.PHONY: demo-managed
+demo-managed: introspect publish docker-up-managed query docker-down
+
+.PHONY: docker-up
+docker-up:
+	docker-compose up -d
+	@sleep 2
+	@docker logs graph-router
+
+.PHONY: query
+query:
+	@.scripts/query.sh
+
+.PHONY: docker-down
+docker-down:
+	docker-compose down
 
 .PHONY: supergraph
 supergraph: introspect config compose
-
-.PHONY: local
-local: supergraph install run
-
-.PHONY: demo
-demo: docker-up smoke docker-down
-
-.PHONY: managed
-managed: introspect publish install run-managed
 
 .PHONY: introspect
 introspect:
@@ -25,35 +36,41 @@ config:
 compose:
 	rover supergraph compose --config ./supergraph.yaml > supergraph.graphql
 
-.PHONY: install
-install:
-	npm install
+.PHONY: graph-api-env
+graph-api-env:
+	@.scripts/graph-api-env.sh
+
+.PHONY: docker-up-managed
+docker-up-managed: introspect publish
+	docker-compose -f docker-compose.managed.yml up -d
+	@sleep 2
+	@docker logs graph-router
+
+.PHONY: publish
+publish:
+	.scripts/publish.sh
+
+.PHONY: check-products
+check-products:
+	.scripts/check-products.sh
+
+.PHONY: local
+local: supergraph install run
+
+.PHONY: managed
+managed: introspect publish install run-managed
 
 .PHONY: run
 run:
 	node index.js local
 
-.PHONY: ci-local
-ci-local:
-	.scripts/ci-local.sh
+.PHONY: run-managed
+run-managed:
+	.scripts/run-managed.sh
 
-.PHONY: docker-up
-docker-up: supergraph
-	docker compose up -d
-	@sleep 2
-	@docker logs graph-router
-
-.PHONY: query
-query:
-	@.scripts/query.sh
-
-.PHONY: smoke
-smoke:
-	@.scripts/smoke.sh
-
-.PHONY: docker-down
-docker-down:
-	docker compose down
+.PHONY: install
+install:
+	npm install
 
 .PHONY: docker
 docker: docker-build docker-run
@@ -72,9 +89,17 @@ docker-run:
 docker-stop:
 	docker kill gateway
 
+.PHONY: ci-local
+ci-local:
+	.scripts/ci-local.sh
+
 .PHONY: ci-docker
 ci-docker:
 	.scripts/ci-docker.sh
+
+.PHONY: smoke
+smoke:
+	@.scripts/smoke.sh
 
 .PHONY: dep-act
 dep-act:
@@ -87,19 +112,3 @@ act:
 .PHONY: act-main
 act-medium:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/main.yml
-
-.PHONY: act-docker
-act-docker:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/docker.yml
-
-.PHONY: publish
-publish:
-	.scripts/publish.sh
-
-.PHONY: run-managed
-run-managed:
-	.scripts/run-managed.sh
-
-.PHONY: check-products
-check-products:
-	.scripts/check-products.sh

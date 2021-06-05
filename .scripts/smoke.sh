@@ -2,9 +2,15 @@
 
 PORT="${1:-4000}"
 
-sleep 2
 echo Smoke test
-ACT=`.scripts/query.sh $PORT`
+
+sleep 2
+
+ACT=`curl -X POST \
+-H "Content-Type: application/json" \
+--data '{ "query": "{ bestSellers { title } } " }' \
+http://localhost:$PORT/`
+
 EXP='{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}'
 echo $ACT
 if [ "$ACT" = "$EXP" ]; then
