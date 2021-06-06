@@ -34,11 +34,13 @@ See also: [New Federation UX - Docs](https://www.apollographql.com/docs/federati
 ## Prerequisites
 
 You'll need:
+
 * [docker](https://docs.docker.com/get-docker/)
 * [docker-compose](https://docs.docker.com/compose/install/)
 * `rover` [our new CLI](https://www.apollographql.com/docs/rover/getting-started) for managing and maintaining data graphs.
 
 To install `rover`:
+
 ```sh
 curl -sSL https://rover.apollo.dev/nix/latest | sh
 ```
@@ -86,6 +88,7 @@ make compose
 ```
 
 which composes a supergraph schema:
+
 ```
 rover supergraph compose --config ./supergraph.yaml > supergraph.graphql
 ```
@@ -155,18 +158,41 @@ To get started with Managed Federation, create your Apollo account:
 
 Create a `Graph` of type `Deployed` with the `Federation` option.
 
-Create an environment variables file with `APOLLO_KEY` using:
+Create the `graph-api.env` file with `APOLLO_KEY` using:
 
 ```sh
 make graph-api-env
 ```
 
+for use in `docker-compose.managed.yml`:
+```yaml
+version: '3'
+ services:
+   web:
+     container_name: graph-router
+     build: .
+     entrypoint: ["node", "index.js", "managed"]
+     environment:
+       - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
+     env_file: # create with make graph-api-env
+       - graph-api.env
+     ports:
+       - "4000:4000"
+```
+
+`graph-api.env`:
+```
+APOLLO_KEY=<redacted>
+```
+
 Then run the Managed Federation demo:
+
 ```sh
 make demo-managed
 ```
 
 Which does the following:
+
 ```sh
 # pull subgraph schemas with federation enrichments
 make introspect
@@ -203,6 +229,7 @@ Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the
 ![Federated Graph in Apollo Studio](docs/media/studio.png)
 
 and finally the graph-router container is started:
+
 ```sh
 make docker-up-managed
 ```
@@ -217,27 +244,6 @@ Creating graph-router ... done
 Starting Apollo Gateway in managed mode ...
 Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-preview@current/
 🚀 Server ready at http://localhost:4000/
-```
-
-`docker-compose.managed.yml`:
-```yaml
-version: '3'
- services:
-   web:
-     container_name: graph-router
-     build: .
-     entrypoint: ["node", "index.js", "managed"]
-     environment:
-       - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
-     env_file: # create with make graph-api-env
-       - graph-api.env
-     ports:
-       - "4000:4000"
-```
-
-`graph-api.env`:
-```
-APOLLO_KEY=<redacted>
 ```
 
 `make demo-managed` then issues a curl request to the graph router:
