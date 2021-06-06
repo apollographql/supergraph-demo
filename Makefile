@@ -41,7 +41,7 @@ graph-api-env:
 	@.scripts/graph-api-env.sh
 
 .PHONY: docker-up-managed
-docker-up-managed: introspect publish
+docker-up-managed:
 	docker-compose -f docker-compose.managed.yml up -d
 	@sleep 2
 	@docker logs graph-router
