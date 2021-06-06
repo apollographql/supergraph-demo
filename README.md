@@ -38,7 +38,7 @@ You'll need:
 * [docker-compose](https://docs.docker.com/compose/install/)
 * `rover` [our new CLI](https://www.apollographql.com/docs/rover/getting-started) for managing and maintaining data graphs.
 
-To install 'rover':
+To install `rover`:
 ```sh
 curl -sSL https://rover.apollo.dev/nix/latest | sh
 ```
@@ -59,6 +59,7 @@ make introspect
 ```
 
 which gets the subgraph schemas from all subgraph servers:
+
 ```
 rover subgraph introspect https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/orders.graphql
 rover subgraph introspect https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/products.graphql
@@ -74,6 +75,7 @@ make config
 ```
 
 which creates a supergraph.yaml config:
+
 ```
 .scripts/config.sh > supergraph.yaml
 ```
@@ -153,7 +155,7 @@ To get started with Managed Federation, create your Apollo account:
 
 Create a `Graph` of type `Deployed` with the `Federation` option.
 
-Create and environment variables file with APOLLO_KEY using:
+Create an environment variables file with `APOLLO_KEY` using:
 
 ```sh
 make graph-api-env
@@ -200,8 +202,8 @@ The gateway for the 'supergraph-demo' graph was updated with a new schema, compo
 Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the subgraphs it's composed from:
 ![Federated Graph in Apollo Studio](docs/media/studio.png)
 
-and finally the graph-router container is started
-```
+and finally the graph-router container is started:
+```sh
 make docker-up-managed
 ```
 
@@ -211,12 +213,34 @@ which shows:
 docker-compose -f docker-compose.managed.yml up -d
 Creating network "supergraph-demo_default" with the default driver
 Creating graph-router ... done
+
 Starting Apollo Gateway in managed mode ...
 Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-preview@current/
 🚀 Server ready at http://localhost:4000/
 ```
 
-`make demo` then issues a curl request to the graph router
+`docker-compose.managed.yml`:
+```yaml
+version: '3'
+ services:
+   web:
+     container_name: graph-router
+     build: .
+     entrypoint: ["node", "index.js", "managed"]
+     environment:
+       - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
+     env_file: # create with make graph-api-env
+       - graph-api.env
+     ports:
+       - "4000:4000"
+```
+
+`graph-api.env`:
+```
+APOLLO_KEY=<redacted>
+```
+
+`make demo-managed` then issues a curl request to the graph router:
 
 ```sh
 make query
@@ -245,18 +269,21 @@ and returns this result:
 }
 ```
 
-and finally `make demo` shuts down the graph router, with:
+and finally `make demo-managed` shuts down the graph router, with:
 
 ```sh
 make docker-down
 ```
 
-With Managed Federation you can leave your graph-router running and it will
-update automatically when new subgraphs are published and successfully compose
-and pass all schema check:
+With Managed Federation you can leave graph-router running and it will
+update automatically when subgraph changes are published and they successfully
+compose and pass all schema checks in Apollo Studio:
+
+```sh
+make docker-up-managed
+```
 
 ```
-make docker-up-managed
 Starting Apollo Gateway in managed mode ...
 Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-preview@current/
 🚀 Server ready at http://localhost:4000/
