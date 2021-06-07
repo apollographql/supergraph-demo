@@ -1,0 +1,27 @@
+name: Checks
+on:
+  pull_request_target:
+    branches: [ main ]
+
+jobs:
+  all-subgraphs:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        rover-version: ["latest"]
+        subgraph: ["orders", "products", "reviews", "customers", "inventory", "locations"]
+    env:
+      APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+      GRAPH_REF: supergraph-preview@current
+
+    name: ${{ matrix.subgraph }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: install rover
+        env:
+          ROVER_VERSION: ${{ matrix.rover-version }}
+        run: |
+          curl -sSL https://rover.apollo.dev/nix/$ROVER_VERSION | sh
+          echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
+      - name: check
+        run: rover subgraph check $GRAPH_REF --schema subgraphs/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
