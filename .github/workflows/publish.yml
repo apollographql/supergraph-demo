@@ -41,5 +41,7 @@ jobs:
         run: |
           curl -sSL https://rover.apollo.dev/nix/$ROVER_VERSION | sh
           echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
+      - name: check
+        run: rover subgraph check $GRAPH_REF --schema subgraphs/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
       - name: publish
         run: rover subgraph publish $GRAPH_REF --routing-url ${{ matrix.routing_url }} --schema subgraphs/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
