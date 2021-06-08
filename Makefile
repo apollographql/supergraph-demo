@@ -124,3 +124,7 @@ act-checks:
 .PHONY: act-publish
 act-publish:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/publish.yml --secret-file graph-api.env
+
+.PHONY: act-docker
+act-docker:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/docker.yml --secret-file docker.secrets 
