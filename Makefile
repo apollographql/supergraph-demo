@@ -54,6 +54,10 @@ publish:
 check-products:
 	.scripts/check-products.sh
 
+.PHONY: check-all
+check-all:
+	.scripts/check-all.sh
+
 .PHONY: local
 local: supergraph install run
 
@@ -107,8 +111,16 @@ dep-act:
 
 .PHONY: act
 act:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04
-
-.PHONY: act-main
-act-medium:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/main.yml
+
+.PHONY: act-all
+act-all:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 --secret-file graph-api.env
+
+.PHONY: act-checks
+act-checks:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/checks.yml --secret-file graph-api.env --detect-event
+
+.PHONY: act-publish
+act-publish:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/publish.yml --secret-file graph-api.env

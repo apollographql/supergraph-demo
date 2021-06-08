@@ -1,0 +1,45 @@
+name: Publish
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  all-subgraphs:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        include:
+          - subgraph: "orders"
+            routing_url: "https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql"
+            rover-version: "latest"
+          - subgraph: "products"
+            routing_url: "https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql"
+            rover-version: "latest"
+          - subgraph: "reviews"
+            routing_url: "https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql"
+            rover-version: "latest"
+          - subgraph: "customers"
+            routing_url: "https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/Prod/graphql"
+            rover-version: "latest"
+          - subgraph: "inventory"
+            routing_url: "https://2lc1ekf3dd.execute-api.us-east-1.amazonaws.com/Prod/graphql"
+            rover-version: "latest"
+          - subgraph: "locations"
+            routing_url: "https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql"
+            rover-version: "latest"
+    env:
+      APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+      GRAPH_REF: supergraph-preview@current
+
+    name: ${{ matrix.subgraph }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: install rover
+        env:
+          ROVER_VERSION: ${{ matrix.rover-version }}
+        run: |
+          curl -sSL https://rover.apollo.dev/nix/$ROVER_VERSION | sh
+          echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
+      - name: publish
+        run: rover subgraph publish $GRAPH_REF --routing-url ${{ matrix.routing_url }} --schema subgraphs/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
