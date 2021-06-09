@@ -93,6 +93,33 @@ docker-run:
 docker-stop:
 	docker kill gateway
 
+.PHONY: k8s-create
+k8s-create:
+	kind create cluster --image kindest/node:v1.19.7 --config=k8s/cluster.yaml --wait 5m
+	kubectl apply -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-crds.yaml
+	kubectl apply -n ambassador -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-kind.yaml
+	kubectl wait --timeout=180s -n ambassador --for=condition=deployed ambassadorinstallations/ambassador
+
+.PHONY: k8s-router-up
+k8s-router-up:
+	kubectl apply -f k8s/router.yaml
+
+.PHONY: k8s-router-down
+k8s-router-down:
+	kubectl delete -f k8s/router.yaml
+
+.PHONY: k8s-query
+k8s-query:
+	.scripts/query.sh 80
+
+.PHONY: k8s-smoke
+k8s-smoke:
+	.scripts/smoke.sh 80
+
+.PHONY: k8s-delete
+k8s-delete:
+	kind delete cluster
+
 .PHONY: ci-local
 ci-local:
 	.scripts/ci-local.sh
