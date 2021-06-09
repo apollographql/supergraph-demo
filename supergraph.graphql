@@ -40,8 +40,8 @@ type Aisle {
 
 type ApproxLocation
   @join__owner(graph: INVENTORY)
-  @join__type(graph: INVENTORY, key: "warehouse { id }")
-  @join__type(graph: ORDERS, key: "warehouse { id }")
+  @join__type(graph: INVENTORY, key: "warehouse{id}")
+  @join__type(graph: ORDERS, key: "warehouse{id}")
 {
   warehouse: Warehouse @join__field(graph: INVENTORY)
   aisle: Int @join__field(graph: INVENTORY)

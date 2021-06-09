@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PORT="${1:-4000}"
+export GATEWAY_PORT="${GATEWAY_PORT:-4000}"
 
-node index.js local $PORT &
-.scripts/smoke.sh $PORT
+node index.js supergraph.graphql &
+.scripts/smoke.sh $GATEWAY_PORT
 EXIT=$?
-kill -9 `lsof -i:$PORT -t`
+kill -9 `lsof -i:$GATEWAY_PORT -t`
 exit $EXIT

@@ -2,15 +2,17 @@ const { ApolloServer } = require('apollo-server');
 const { ApolloGateway } = require('@apollo/gateway');
 const { readFileSync } = require('fs');
 
+const { GATEWAY_PORT } = process.env;
+
 const args = process.argv.slice(2);
-const mode = args[0]
-const port = args[1] ? args[1] : 4000
+const supergraph = args[0];
+const mode = supergraph ? "local" : "managed";
+const port = GATEWAY_PORT ? GATEWAY_PORT : 4000;
 
 console.log(`Starting Apollo Gateway in ${mode} mode ...`);
 
 const config = {};
 if (mode === "local"){
-  const supergraph= "./supergraph.graphql"
   console.log(`Using local: ${supergraph}`)
   config['supergraphSdl'] = readFileSync(supergraph).toString();
 }
