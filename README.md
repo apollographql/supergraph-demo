@@ -475,7 +475,7 @@ make k8s-query
 
 If the services are still starting you may get one of the following:
 * `upstream request timeout`
-* `upstream connect error or disconnect/reset before headers. reset reason: connection failure'
+* `upstream connect error or disconnect/reset before headers. reset reason: connection failure`
 
 but after the services have started you'll see:
 
