@@ -463,10 +463,10 @@ service/graphql-service   ClusterIP   10.96.115.47   <none>        4001/TCP   2m
 service/kubernetes        ClusterIP   10.96.0.1      <none>        443/TCP    8m
 
 NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/graph-router   3/3     3            3           42m
+deployment.apps/graph-router   3/3     3            3           2m
 
 NAME                                    DESIRED   CURRENT   READY   AGE
-replicaset.apps/graph-router-c7577547   3         3         3       42m
+replicaset.apps/graph-router-c7577547   3         3         3       2m
 ```
 
 Issue a query against the graph router:
