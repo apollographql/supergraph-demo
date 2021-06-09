@@ -107,7 +107,7 @@ Creating network "supergraph-demo_default" with the default driver
 Creating graph-router ... done
 
 Starting Apollo Gateway in local mode ...
-Using local: ./supergraph.graphql
+Using local: supergraph.graphql
 🚀 Server ready at http://localhost:4000/
 ```
 
@@ -372,26 +372,21 @@ from node:14
 
 WORKDIR /usr/src/app
 
-COPY package.json ./
+COPY package.json .
 
 RUN npm install
 
 COPY index.js .
 COPY supergraph.graphql .
 
-CMD [ "node", "index.js", "local"]
+CMD [ "node", "index.js", "supergraph.graphql"]
 ```
 
-Create a local k8s cluster with the Ambassador Ingress Controller:
+Create a local k8s cluster with the Ambassador Ingress Controller and create a
+graph-router `Deployment` with 3 replicas, a `Service`, and an `Ingress`:
 
 ```sh
-make k8s-create
-```
-
-Create a graph-router `Deployment` with 3 replicas, a `Service`, and an `Ingress`:
-
-```sh
-make k8s-router-up
+make k8s-up
 ```
 
 which uses the following config from [k8s/router.yaml](k8s/router.yaml):
@@ -416,8 +411,11 @@ spec:
       containers:
       - name: gateway
         image: prasek/supergraph-demo:latest
+	env:
+        - name: GATEWAY_PORT
+          value: "3999"
         ports:
-        - containerPort: 4000
+        - containerPort: 3999
 ---
 apiVersion: v1
 kind: Service
@@ -429,7 +427,7 @@ spec:
   ports:
     - protocol: TCP
       port: 4001
-      targetPort: 4000
+      targetPort: 3999
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -475,13 +473,24 @@ Issue a query against the graph router:
 make k8s-query
 ```
 
-If the services are still starting you may get a `upstream request timeout`.
+If the services are still starting you may get one of the following:
+* `upstream request timeout`
+* `upstream connect error or disconnect/reset before headers. reset reason: connection failure'
+
+but after the services have started you'll see:
+
+```
+.scripts/query.sh 80
+-------------------------------------------------------------------------------------------
+curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ bestSellers { title } } " }' http://localhost:80/
+{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}
+-------------------------------------------------------------------------------------------
+```
 
 Tear down the cluster:
 
 ```sh
-make k8s-router-down
-make k8s-delete
+make k8s-down
 ```
 
 ## Learn More

@@ -19,6 +19,8 @@ jobs:
           - node-version: 14.x
             rover-version: "latest"
             gateway-port: 4002
+    env:
+      GATEWAY_PORT: ${{ matrix.gateway-port }}
 
     steps:
       - uses: actions/checkout@v2
@@ -41,9 +43,7 @@ jobs:
       - name: npm install
         run: make install
       - name: smoke test
-        env:
-          GATEWAY_PORT: ${{ matrix.gateway-port }}
-        run: .scripts/ci-local.sh $GATEWAY_PORT
+        run: .scripts/ci-local.sh
   docker:
     runs-on: ubuntu-18.04
     steps:

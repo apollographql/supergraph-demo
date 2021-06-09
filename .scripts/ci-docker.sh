@@ -1,11 +1,11 @@
 #!/bin/bash
 
-PORT="${1:-4000}"
+export GATEWAY_PORT="${GATEWAY_PORT:-4000}"
 
-docker run --rm -d --name=gateway -p $PORT:4000 my/supergraph-demo
+docker run --rm -d --name=gateway -p $GATEWAY_PORT:4000 my/supergraph-demo
 sleep 2
 docker logs gateway
-.scripts/smoke.sh $PORT
+.scripts/smoke.sh $GATEWAY_PORT
 EXIT=$?
 docker kill gateway
 exit $EXIT
