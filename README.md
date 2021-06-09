@@ -360,6 +360,130 @@ Checked the proposed subgraph against supergraph-demo@current
 There were no changes detected in the composed schema.
 ```
 
+## Deploying a Graph Router to Kubernetes
+
+You'll need:
+* [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+
+This uses a container image built from the [Dockerfile](Dockerfile):
+
+```dockerfile
+from node:14
+
+WORKDIR /usr/src/app
+
+COPY package.json ./
+
+RUN npm install
+
+COPY index.js .
+COPY supergraph.graphql .
+
+CMD [ "node", "index.js", "local"]
+```
+
+Create a local k8s cluster with the Ambassador Ingress Controller:
+
+```sh
+make k8s-create
+```
+
+Create a graph-router `Deployment` with 3 replicas, a `Service`, and an `Ingress`:
+
+```sh
+make k8s-router-up
+```
+
+which uses the following config from [k8s/router.yaml](k8s/router.yaml):
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: graph-router
+  labels:
+    app: graphql
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: graphql
+  template:
+    metadata:
+      labels:
+        app: graphql
+    spec:
+      containers:
+      - name: gateway
+        image: prasek/supergraph-demo:latest
+        ports:
+        - containerPort: 4000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: graphql-service
+spec:
+  selector:
+    app: graphql
+  ports:
+    - protocol: TCP
+      port: 4001
+      targetPort: 4000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: graphql-ingress
+  annotations:
+    kubernetes.io/ingress.class: ambassador
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: graphql-service
+            port:
+              number: 4001
+```
+
+To see everything running run `kubectl get all`:
+
+```
+NAME                              READY   STATUS    RESTARTS   AGE
+pod/graph-router-c7577547-9vkl4   1/1     Running   0          2m
+pod/graph-router-c7577547-hpzrb   1/1     Running   0          2m
+pod/graph-router-c7577547-nbfcp   1/1     Running   0          2m
+
+NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/graphql-service   ClusterIP   10.96.115.47   <none>        4001/TCP   2m
+service/kubernetes        ClusterIP   10.96.0.1      <none>        443/TCP    8m
+
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/graph-router   3/3     3            3           42m
+
+NAME                                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/graph-router-c7577547   3         3         3       42m
+```
+
+Issue a query against the graph router:
+
+```sh
+make k8s-query
+```
+
+If the services are still starting you may get a `upstream request timeout`.
+
+Tear down the cluster:
+
+```sh
+make k8s-router-down
+make k8s-delete
+```
+
 ## Learn More
 
 Apollo tools and services help you develop, maintain, operate, and scale your data graph.
