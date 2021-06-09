@@ -411,7 +411,7 @@ spec:
       containers:
       - name: gateway
         image: prasek/supergraph-demo:latest
-	env:
+        env:
         - name: GATEWAY_PORT
           value: "3999"
         ports:
