@@ -360,9 +360,96 @@ Checked the proposed subgraph against supergraph-demo@current
 There were no changes detected in the composed schema.
 ```
 
-## Deploying a Graph Router to Kubernetes
+## CI/CD setup
+
+To enable concurrent service delivery in a multi-team environment, you can shift-left your schema checks to find errors that are often otherwise found at deploy time:
+
+For each subgraph:
+
+* on code pull request:
+  * `rover subgraph check`
+* on config pull request:
+  * `rover subgraph check`
+* on config merge/push (after the subgraph service has been deployed):
+  * `rover subgraph check`
+  * `rover subgraph publish`
+* [Managed Federation](https://www.apollographql.com/docs/federation/managed-federation/overview/)
+  * [Federated composition checks](https://www.apollographql.com/docs/studio/schema-checks/#federated-composition-checks) across all published subgraphs
+  * Publishes a validated supergraph schema to the Uplink for the Gateway to use.
+
+Note that `rover subgraph publish` always stores a new subgraph schema version
+to the Apollo Registry, even if schema checks don’t pass. Managed Federation
+automatically composes published subgraphs and runs an additional set of
+federated schema checks in a globally consistent way before the composed
+supergraph schema is published to the Uplink for the Gateway to use.
+
+This enables most conflicts to be detected closer to the source of the change
+(in each PR) while also providing a central point of control that detects and
+notifies of conflicts across teams. Managed Federation doesn’t publish the
+composed supergraph schema until composition across all published subgraph
+succeed and schema checks pass.
+
+With this approach, failed schema checks ([example](https://github.com/apollographql/supergraph-demo/pull/32)) are caught as close to the source of
+the change as possible, but only fully validated supergraph schemas are
+published for use.
+
+* CI for the PR - vast majority of conflicts are detected here, closest to the source of change
+* CI for merge - some conflicts are caught here, that occurred after the PR was validated
+* Managed Federation ultimately catches all errors and provides a central point of control with globally consistent schema checks and composition before the supergraph is published to the Registry for use by:
+  * Existing Gateway fleet that polls the Apollo Uplink to update in-place.
+  * Extended CI & automation, e.g. to build a Gateway container image with the generated supergraph schema via:
+    * [Schema change webhooks](https://www.apollographql.com/blog/announcement/webhooks/)
+    * `rover supergraph fetch` which can be polled and diffed in a scheduled CI job to generate a new Gateway image when changes are detected.
+
+Breaking changes are sometimes intentional, and to accommodate this, Apollo
+Studio has the option to mark certain changes as safe in the UI, that provides a
+check report URL in your CI, so you can easily navigate to Apollo Studio to:
+review the check, mark things safe and then re-run your publish pipeline.
+
+![schema-check-mark-safe](docs/media/schema-check-mark-safe.png)
+
+### CI/CD Option 1 - Standard CI with automatic Gateway updates (in-place)
+
+#### Setup
+
+* Create graph variants in Apollo Studio for each environment: `dev` , `staging`, and `prod`.
+  * composition checks will run against the subgraph schemas published to each variant
+  * operation checks should be configured to validate real world [schema usage](https://www.apollographql.com/docs/studio/check-configurations/#configuration-options) with staging and prod variants.
+* Create a [separate CI job](https://www.apollographql.com/docs/studio/schema-checks/#using-in-ci) for each variant of your schema - e.g. with separate git branches for each environment
+* Configure Gateways in each fleet for `dev` , `staging`, and `prod` to pull from their respective graph variants.
+  * with [usage reporting](https://www.apollographql.com/docs/apollo-server/api/plugin/usage-reporting/#gatsby-focus-wrapper), so operation checks can validate schema changes against actual field usage.
+  * with [schema reporting](https://www.apollographql.com/docs/studio/schema/schema-reporting/), to report what schema the Server/Gateway is running for deployment status
+* If you’re in a monorepo, you should consider [overriding the APOLLO_VCS_COMMIT and/or APOLLO_VCS_BRANCH](https://www.apollographql.com/docs/rover/configuring/#overriding) to correlate schema changes for subgraphs
+
+_CI_ - for each graph variant:
+
+* config pull requests: [example](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/checks.yml)
+  * `rover subgraph check`
+* config merge/push: [example](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/publish.yml), [example 2](https://github.com/apollographql/acephei-products/blob/main/.github/workflows/deploy-staging.yaml) (after the subgraph service has been deployed)
+  * `rover subgraph check`
+  * `rover subgraph publish`
+* Managed Federation
+  * [Federated composition checks](https://www.apollographql.com/docs/studio/schema-checks/#federated-composition-checks) across all published subgraphs
+  * Publishes a validated supergraph schema (static artifact) to the Uplink for the Gateway to use.
+
+_CD_ - for each graph variant:
+
+* [Configure the Gateways deployed to your fleet](https://www.apollographql.com/docs/federation/managed-federation/setup/#3-modify-the-gateway-if-necessary) to use Managed Federation (the default)
+  * this enabled automatic updates without needing to restart your Gateway
+
+### CI/CD Option 2 - CI/CD for immutable container-based Gateway deployments
+
+Managed Federation runs a build each time a subgraph schema is published to a graph. It provides a central point of control with globally consistent schema checks and composition before the supergraph is published to the Registry which can be used to trigger a CI job that puts the supergraph artifact into a new container image:
+
+* [Schema change webhooks](https://www.apollographql.com/blog/announcement/webhooks/) can trigger a CI job
+* `rover supergraph fetch` can be poll the registry, diff the supergraph against the previous supergraph, and create a new Gateway image if they're different.
+
+Once the new Gateway image is created an updated `Deployment` manifest can be created and committed to the config repo for the Gateway.
+
+## Deploying to Kubernetes
 
 You'll need:
+
 * [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
 This uses a container image built from the [Dockerfile](Dockerfile):
