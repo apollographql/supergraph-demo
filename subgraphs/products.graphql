@@ -2,6 +2,11 @@ enum CURRENCY_CODE {
   USD
 }
 
+enum Color {
+  BLUE
+  GREEN
+}
+
 type Department {
   category: ProductCategory
   url: String
