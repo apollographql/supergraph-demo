@@ -18,8 +18,8 @@ directive @join__graph(name: String!, url: String!) on ENUM_VALUE
 type Address
   @join__owner(graph: LOCATIONS)
   @join__type(graph: LOCATIONS, key: "id")
-  @join__type(graph: CUSTOMERS, key: "id")
   @join__type(graph: INVENTORY, key: "id")
+  @join__type(graph: CUSTOMERS, key: "id")
   @join__type(graph: ORDERS, key: "id")
 {
   id: ID! @join__field(graph: LOCATIONS)
@@ -60,6 +60,11 @@ enum CANCELLED_REASON {
   FRAUD
   NO_INVENTORY
   OTHER
+}
+
+enum Color {
+  BLUE
+  GREEN
 }
 
 """
@@ -160,8 +165,8 @@ type Product
   @join__owner(graph: PRODUCTS)
   @join__type(graph: PRODUCTS, key: "id")
   @join__type(graph: INVENTORY, key: "id")
-  @join__type(graph: ORDERS, key: "id")
   @join__type(graph: REVIEWS, key: "id")
+  @join__type(graph: ORDERS, key: "id")
 {
   id: ID! @join__field(graph: PRODUCTS)
   title: String @join__field(graph: PRODUCTS)
