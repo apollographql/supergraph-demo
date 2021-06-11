@@ -3,9 +3,31 @@ on:
   issue_comment:
     types: [created]
 jobs:
+  info:
+    name: Info
+    runs-on: ubuntu-18.04
+    steps:
+      - name: info
+        env:
+          PR: ${{ github.event.pull_request }}
+          MSG: ${{ github.event.comment.body }}
+          GRP: ${{ github.event.issue.author_association }}
+        run: |
+          echo "PR: $PR"
+          echo "MSG: $MSG"
+          echo "GRP: $GRP"
+
   rebase:
     name: Rebase PR
-    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/rebase') && github.event.comment.author_association == 'MEMBER'
+    if: |
+      contains(github.event.comment.body, '/rebase') &&
+      (github.event.issue.pull_request != '') &&
+      (
+        (github.event.issue.author_association == 'OWNER') ||
+        (github.event.issue.author_association == 'COLLABORATOR') ||
+        (github.event.issue.author_association == 'CONTRIBUTOR') ||
+        (github.event.issue.author_association == 'MEMBER')
+      )
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout the latest code

@@ -134,22 +134,22 @@ dep-act:
 act:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/main.yml
 
-.PHONY: act-all
-act-all:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 --secret-file graph-api.env
+.PHONY: act-subgraph-check
+act-subgraph-check:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/subgraph-check.yml --secret-file graph-api.env --detect-event
 
-.PHONY: act-checks
-act-checks:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/checks.yml --secret-file graph-api.env --detect-event
+.PHONY: act-subgraph-publish
+act-subgraph-publish:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/subgraph-publish.yml --secret-file graph-api.env
 
-.PHONY: act-publish
-act-publish:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/publish.yml --secret-file graph-api.env
+.PHONY: act-supergraph-gateway-docker-push
+act-supergraph-gateway-docker-push:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/supergraph-gateway-docker-push.yml --secret-file docker.secrets 
 
-.PHONY: act-docker
-act-docker:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/docker.yml --secret-file docker.secrets 
+.PHONY: act-supergraph-build-webhook
+act-supergraph-build-webhook:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/supergraph-build-webhook.yml -s GITHUB_TOKEN --secret-file graph-api.env --detect-event
 
-.PHONY: act-studio-build-hook
-act-studio-build-hook:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/studio-build-webhook.yml -s GITHUB_TOKEN --secret-file docker.secrets --detect-event
+.PHONY: act-rebase
+act-rebase:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/rebase.yml -s GITHUB_TOKEN --secret-file docker.secrets --detect-event
