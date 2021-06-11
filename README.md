@@ -5,6 +5,17 @@
 
 Moving from dynamic composition to static composition with supergraphs.
 
+Contents:
+
+ * [Welcome](#welcome)
+ * [Prerequisites](#prerequisites)
+ * [Local Supergraph Composition](#local-supergraph-composition)
+ * [Managed Federation](#managed-federation)
+ * [Ship Faster Without Breaking Changes](#ship-faster-without-breaking-changes)
+ * [CI/CD setup](#cicd-setup)
+ * [Deploying to Kubernetes](#deploying-to-kubernetes)
+ * [Learn More](#learn-more)
+
 ## Welcome
 
 Apollo Federation and Managed Federation have delivered significant
@@ -423,9 +434,10 @@ review the check, mark things safe and then re-run your publish pipeline.
 
 _CI_ - for each graph variant:
 
-* config pull requests: [example](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/checks.yml)
+* config pull requests: [subgraph-check.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-check.yml)
   * `rover subgraph check`
-* config merge/push: [example](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/publish.yml), [example 2](https://github.com/apollographql/acephei-products/blob/main/.github/workflows/deploy-staging.yaml) (after the subgraph service has been deployed)
+* config merge/push: [subgraph-publish.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-publish.yml), [example 2](https://github.com/apollographql/acephei-products/blob/main/.github/workflows/deploy-staging.yaml)
+  * run after the subgraph service has been deployed
   * `rover subgraph check`
   * `rover subgraph publish`
 * Managed Federation
@@ -443,6 +455,13 @@ Managed Federation runs a build each time a subgraph schema is published to a gr
 
 * [Schema change webhooks](https://www.apollographql.com/blog/announcement/webhooks/) can trigger a CI job
 * `rover supergraph fetch` can be poll the registry, diff the supergraph against the previous supergraph, and create a new Gateway image if they're different.
+
+_Extended CI_ - for each graph variant:
+
+* Publish docker image used in [Deploying to Kubernetes](#deploying-to-kubernetes):
+  * [Workflow: New PR when new supergraph schemas is published by Managed Federation](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/supergraph-build-webhook.yml)
+  * [Workflow: New Gateway docker image when PR is landed](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/supergraph-gateway-docker-push.yml) 
+    * with embedded supergraph schema, published by Managed Federation
 
 Once the new Gateway image is created an updated `Deployment` manifest can be created and committed to the config repo for the Gateway.
 
