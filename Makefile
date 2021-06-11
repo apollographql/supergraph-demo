@@ -149,3 +149,7 @@ act-publish:
 .PHONY: act-docker
 act-docker:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/docker.yml --secret-file docker.secrets 
+
+.PHONY: act-studio-build-hook
+act-studio-build-hook:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/studio-build-webhook.yml -s GITHUB_TOKEN --secret-file docker.secrets --detect-event

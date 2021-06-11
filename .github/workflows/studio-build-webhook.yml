@@ -1,0 +1,64 @@
+name: studio-build-webhook
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+
+jobs:
+  check:
+    runs-on: ubuntu-18.04
+    concurrency:
+      group: global
+      cancel-in-progress: true
+    env:
+      APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+      GRAPH_REF: supergraph-preview@current
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: install rover
+        run: |
+          curl -sSL https://rover.apollo.dev/nix/latest | sh
+          echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
+      -
+        name: supergraph fetch
+        run: rover supergraph fetch $GRAPH_REF > supergraph.graphql
+      -
+        id: check
+        run: |
+          echo "::set-output name=result::$(git diff --name-only | grep -E 'supergraph.graphql')"
+          SHA=$(shasum supergraph.graphql | awk '{print $1}')
+          echo "::set-output name=sha::$SHA"
+          echo "::set-output name=sha-short::$(git rev-parse --short $SHA)"
+      -
+        name: validate
+        if: steps.check.outputs.result == 'supergraph.graphql'
+        env:
+          RESULT: ${{ steps.check.outputs.result }}
+          SHA: ${{ steps.check.outputs.sha }}
+          SHA_SHORT: ${{ steps.check.outputs.sha-short }}
+        run: |
+          echo "RESULT: $RESULT"
+          echo "SHA: $SHA"
+          echo "SHA_SHORT: $SHA_SHORT"
+      -
+        name: create pull request
+        id: cpr
+        if: steps.check.outputs.result == 'supergraph.graphql'
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: Update supergraph schema
+          title:  Update supergraph schema ${{ steps.check.outputs.sha-short }}
+          body: |
+            Updated supergraph schema from Apollo Studio:
+            * SHA1 ${{ steps.check.outputs.sha }} ( ${{ steps.check.outputs.sha-short }} )
+          branch: studio-build
+          delete-branch: true
+          assignees: prasek
+      - name: Check output
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
