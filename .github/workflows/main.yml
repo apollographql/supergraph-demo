@@ -8,7 +8,7 @@ on:
     - cron: '30 7,19 * * *'
 
 jobs:
-  smoke:
+  test-local:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -44,7 +44,7 @@ jobs:
         run: make install
       - name: smoke test
         run: .scripts/ci-local.sh
-  docker:
+  test-docker:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout

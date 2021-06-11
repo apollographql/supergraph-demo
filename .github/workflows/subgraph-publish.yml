@@ -1,10 +1,10 @@
-name: Publish
+name: Subgraph Publish
 on:
   push:
     branches: [ main ]
 
 jobs:
-  all-subgraphs:
+  subgraph-publish:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
