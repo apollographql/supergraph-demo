@@ -14,10 +14,17 @@ jobs:
     env:
       APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
       GRAPH_REF: supergraph-preview@current
+      PR_BRANCH: studio-build
     steps:
       -
         name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: use PR branch if exists
+        run: |
+          git checkout $PR_BRANCH || true
       -
         name: install rover
         run: |
@@ -55,7 +62,7 @@ jobs:
           body: |
             Updated supergraph schema from Apollo Studio:
             * SHA1 ${{ steps.check.outputs.sha }} ( ${{ steps.check.outputs.sha-short }} )
-          branch: studio-build
+          branch: ${{ env.PR_BRANCH }}
           delete-branch: true
           assignees: prasek
       - name: Check output
