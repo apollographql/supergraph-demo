@@ -1,10 +1,10 @@
-name: Checks
+name: Subgraph Check
 on:
   pull_request:
     branches: [ main ]
 
 jobs:
-  all-subgraphs:
+  subgraph-check:
     runs-on: ubuntu-18.04
     strategy:
       matrix:

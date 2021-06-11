@@ -1,4 +1,4 @@
-name: studio-build-webhook
+name: Supergraph Build Webhook
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
     - cron: '*/5 * * * *'
 
 jobs:
-  check:
+  supergraph-build-webhook:
     runs-on: ubuntu-18.04
     concurrency:
       group: global
@@ -19,12 +19,6 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      -
-        name: checkout PR branch
-        run: |
-          (git show-branch $PR_BRANCH &>/dev/null) && (git checkout $PR_BRANCH) || (git checkout -b $PR_BRANCH)
       -
         name: install rover
         run: |

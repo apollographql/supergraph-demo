@@ -1,4 +1,4 @@
-name: docker
+name: Supergraph Gateway Docker Push
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - 'main'
 
 jobs:
-  docker:
+  gateway-docker:
     runs-on: ubuntu-18.04
     steps:
       -

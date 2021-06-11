@@ -1,10 +1,10 @@
-name: Automatic Rebase
+name: Rebase PR
 on:
   issue_comment:
     types: [created]
 jobs:
   rebase:
-    name: Rebase
+    name: Rebase PR
     if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/rebase') && github.event.comment.author_association == 'MEMBER'
     runs-on: ubuntu-18.04
     steps:
