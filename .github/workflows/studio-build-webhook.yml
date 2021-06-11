@@ -22,9 +22,9 @@ jobs:
         with:
           fetch-depth: 0
       -
-        name: use PR branch if exists
+        name: checkout PR branch
         run: |
-          git checkout $PR_BRANCH || true
+          (git show-branch $PR_BRANCH &>/dev/null) && (git checkout $PR_BRANCH) || (git checkout -b $PR_BRANCH)
       -
         name: install rover
         run: |
@@ -63,6 +63,7 @@ jobs:
             Updated supergraph schema from Apollo Studio:
             * SHA1 ${{ steps.check.outputs.sha }} ( ${{ steps.check.outputs.sha-short }} )
           branch: ${{ env.PR_BRANCH }}
+          base: main
           delete-branch: true
           assignees: prasek
       - name: Check output
