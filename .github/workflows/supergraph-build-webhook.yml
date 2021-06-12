@@ -51,6 +51,7 @@ jobs:
         if: steps.check.outputs.result == 'supergraph.graphql'
         uses: peter-evans/create-pull-request@v3
         with:
+          token: ${{ secrets.PAT }}
           commit-message: Update supergraph schema
           title:  Update supergraph schema ${{ steps.check.outputs.sha-short }}
           body: |
@@ -59,8 +60,6 @@ jobs:
           branch: ${{ env.PR_BRANCH }}
           base: main
           delete-branch: true
-          author: Phil Prasek <prasek@gmail.com>
-          committer: Phil Prasek <prasek@gmail.com>
           assignees: prasek
       - name: Check output
         run: |
