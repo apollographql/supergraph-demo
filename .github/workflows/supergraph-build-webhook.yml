@@ -59,6 +59,8 @@ jobs:
           branch: ${{ env.PR_BRANCH }}
           base: main
           delete-branch: true
+          author: Phil Prasek <prasek@gmail.com>
+          committer: Phil Prasek <prasek@gmail.com>
           assignees: prasek
       - name: Check output
         run: |
