@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '*/5 * * * *'
-
 jobs:
   supergraph-build-webhook:
     runs-on: ubuntu-18.04
@@ -24,6 +23,12 @@ jobs:
         run: |
           curl -sSL https://rover.apollo.dev/nix/latest | sh
           echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
+      -
+        id: pre-check
+        run: |
+          SHA=$(shasum supergraph.graphql | awk '{print $1}')
+          echo "::set-output name=sha::$SHA"
+          echo "::set-output name=sha-short::$(git rev-parse --short $SHA)"
       -
         name: supergraph fetch
         run: rover supergraph fetch $GRAPH_REF > supergraph.graphql
@@ -45,6 +50,14 @@ jobs:
           echo "RESULT: $RESULT"
           echo "SHA: $SHA"
           echo "SHA_SHORT: $SHA_SHORT"
+          DIFF=$(git diff supergraph.graphql)
+          echo "DIFF<<EOF" >> $GITHUB_ENV
+          echo "$DIFF" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "-----------------------"
+          echo "supergraph.graphql"
+          echo "-----------------------"
+          echo "$DIFF"
       -
         name: create pull request
         id: cpr
@@ -52,16 +65,34 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.PAT }}
-          commit-message: Update supergraph schema
-          title:  Update supergraph schema ${{ steps.check.outputs.sha-short }}
+          committer: Supergraph Demo Bot <prasek+bot@gmail.com>
+          author: Supergraph Demo Bot <prasek+bot@gmail.com>
+          commit-message: Bump supergraph schema from ${{ steps.pre-check.outputs.sha-short }} to ${{ steps.check.outputs.sha-short }}
+          title:  Bump supergraph schema from ${{ steps.pre-check.outputs.sha-short }} to ${{ steps.check.outputs.sha-short }}
           body: |
-            Updated supergraph schema from Apollo Studio:
-            * SHA1 ${{ steps.check.outputs.sha }} ( ${{ steps.check.outputs.sha-short }} )
+            Bump supergraph schema from ${{ steps.pre-check.outputs.sha-short }} to ${{ steps.check.outputs.sha-short }} for ${{ env.GRAPH_REF }}:
+            * Old: SHA1 ${{ steps.pre-check.outputs.sha }} ( ${{ steps.pre-check.outputs.sha-short }} )
+            * New: SHA1 ${{ steps.check.outputs.sha }} ( ${{ steps.check.outputs.sha-short }} )
+
+            <details>
+            <summary>Changes</summary>
+
+            ```
+            ${{ env.DIFF }}
+
+            ```
+
+            </details>
           branch: ${{ env.PR_BRANCH }}
           base: main
           delete-branch: true
           assignees: prasek
       - name: Check output
+        if: steps.check.outputs.result == 'supergraph.graphql'
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+      - name: No changes detected
+        if: steps.check.outputs.result != 'supergraph.graphql'
+        run: |
+          echo "No changes to '$GRAPH_REF' detected"
