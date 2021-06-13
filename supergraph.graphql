@@ -62,6 +62,13 @@ enum CANCELLED_REASON {
   OTHER
 }
 
+enum Color {
+  BLUE
+  GREEN
+  RED
+  PURPLE
+}
+
 """
 https://shopify.dev/docs/storefront-api/reference/common-objects/countrycode
 """
