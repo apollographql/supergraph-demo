@@ -182,7 +182,7 @@ version: '3'
    web:
      container_name: graph-router
      build: .
-     entrypoint: ["node", "index.js", "managed"]
+     entrypoint: ["node", "index.js"]
      environment:
        - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
      env_file: # create with make graph-api-env
