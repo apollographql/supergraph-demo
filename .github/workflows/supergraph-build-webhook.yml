@@ -78,7 +78,7 @@ jobs:
             <details>
             <summary>Changes</summary>
 
-            ```
+            ```diff
             ${{ env.DIFF }}
 
             ```
