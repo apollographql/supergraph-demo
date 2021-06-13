@@ -87,7 +87,6 @@ jobs:
           branch: ${{ env.PR_BRANCH }}
           base: main
           delete-branch: true
-          assignees: prasek
       -
        name: enable pull request automerge
        if: |

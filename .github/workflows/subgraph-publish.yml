@@ -2,6 +2,8 @@ name: Subgraph Publish
 on:
   push:
     branches: [ main ]
+    paths:
+      - "subgraphs/*"
 
 jobs:
   subgraph-publish:

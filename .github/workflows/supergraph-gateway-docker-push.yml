@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - 'main'
+    paths:
+      - "Dockerfile"
+      - "package.json"
+      - "index.js"
+      - "supergraph.graphql"
 
 jobs:
   gateway-docker:

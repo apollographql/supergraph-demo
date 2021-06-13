@@ -2,6 +2,8 @@ name: Subgraph Check
 on:
   pull_request:
     branches: [ main ]
+    paths:
+      - "subgraphs/*"
 
 jobs:
   subgraph-check:
