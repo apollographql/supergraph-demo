@@ -10,12 +10,13 @@ Contents:
 * [Welcome](#welcome)
 * [Prerequisites](#prerequisites)
 * [Local Supergraph Composition](#local-supergraph-composition)
-* [Managed Federation](#managed-federation)
+* [Composition in Apollo Studio](#composition-in-apollo-studio)
 * [Ship Faster Without Breaking Changes](#ship-faster-without-breaking-changes)
-* [CI/CD setup](#cicd-setup)
+* [CI/CD](#cicd)
   * [Overview](#overview)
-  * [Gateway Option 1: Update-in-place (default)](#gateway-cicd-option-1-update-in-place)
-  * [Gateway Option 2: Immutable container deployments (extended CI)](#gateway-cicd-option-2---immutable-container-deployments)
+  * [CI Setup](#ci-setup)
+  * [CD: Update Gateway In Place](#cd-update-gateway-in-place)
+  * [CD: Immutable Container Deploys](#cd-immutable-container-deploys)
 * [Deploying to Kubernetes](#deploying-to-kubernetes)
 * [Learn More](#learn-more)
 
@@ -51,7 +52,7 @@ You'll need:
 
 * [docker](https://docs.docker.com/get-docker/)
 * [docker-compose](https://docs.docker.com/compose/install/)
-* `rover` [our new CLI](https://www.apollographql.com/docs/rover/getting-started) for managing and maintaining data graphs.
+* `rover` [our new CLI](https://www.apollographql.com/docs/rover/getting-started)
 
 To install `rover`:
 
@@ -78,11 +79,10 @@ which gets the subgraph schemas from all subgraph servers:
 
 ```
 rover subgraph introspect https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/orders.graphql
+
 rover subgraph introspect https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/products.graphql
-rover subgraph introspect https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/reviews.graphql
-rover subgraph introspect https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/customers.graphql
-rover subgraph introspect https://2lc1ekf3dd.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/inventory.graphql
-rover subgraph introspect https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/locations.graphql
+
+...
 ```
 
 ```sh
@@ -154,15 +154,15 @@ and returns this result:
 }
 ```
 
-and finally `make demo` shuts down graph-router, with:
+`make demo` then shuts down the graph-router:
 
 ```sh
 make docker-down
 ```
 
-## Managed Federation
+## Composition in Apollo Studio
 
-Managed Federation enables teams to independently publish subgraphs to the Apollo Registry, so they can be automatically composed into a supergraph for apps to use.
+[Managed Federation](https://www.apollographql.com/docs/federation/managed-federation/overview/) in Apollo Studio enables teams to independently publish subgraphs to the Apollo Registry, so they can be automatically composed into a supergraph for apps to use.
 
 To get started with Managed Federation, create your Apollo account:
 
@@ -179,6 +179,7 @@ make graph-api-env
 ```
 
 for use in `docker-compose.managed.yml`:
+
 ```yaml
 version: '3'
  services:
@@ -195,6 +196,7 @@ version: '3'
 ```
 
 `graph-api.env`:
+
 ```
 APOLLO_KEY=<redacted>
 ```
@@ -228,7 +230,7 @@ Publishing SDL to supergraph-demo:current (subgraph: orders) using credentials f
 error: We are unable to run composition for your graph because a subgraph contains an extend declaration for the type 'Product' which does not exist in any subgraph.
 ```
 
-However once all subgraphs are published the supergraph will be updated, for example: 
+However once all subgraphs are published the supergraph will be updated, for example:
 
 ```
 rover subgraph publish supergraph-demo --routing-url https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql --schema subgraphs/locations.graphql --name locations
@@ -289,7 +291,7 @@ and returns this result:
 }
 ```
 
-and finally `make demo-managed` shuts down the graph router, with:
+`make demo-managed` then shuts down the graph router:
 
 ```sh
 make docker-down
@@ -374,7 +376,7 @@ Checked the proposed subgraph against supergraph-demo@current
 There were no changes detected in the composed schema.
 ```
 
-## CI/CD setup
+## CI/CD
 
 ### Overview
 
@@ -390,20 +392,13 @@ _CI_ for each subgraph:
   * `rover subgraph check`
   * `rover subgraph publish`
 * [Managed Federation](https://www.apollographql.com/docs/federation/managed-federation/overview/)
-  * [Federated composition checks](https://www.apollographql.com/docs/studio/schema-checks/#federated-composition-checks) across all published subgraphs
-  * Publishes a validated supergraph schema to the Registry for use in deployment workflows.
+  * Runs [schema checks](https://www.apollographql.com/docs/studio/schema-checks/) after each `rover subgraph publish`
+  * Composes a supergraph schema if all checks pass
+  * Makes the supergraph schema available in the:
+    * Registry - for retrieval via `rover supergraph fetch`
+    * Uplink - that the Gateway can poll for live updates.
 
-Note that `rover subgraph publish` always stores a new subgraph schema version
-to the Apollo Registry, even if schema checks don’t pass. Managed Federation
-automatically composes published subgraphs and runs an additional set of
-federated schema checks in a globally consistent way before the composed
-supergraph schema is published to the Uplink for the Gateway to use.
-
-This enables most conflicts to be detected closer to the source of the change
-(in each PR) while also providing a central point of control that detects and
-notifies of conflicts across teams. Managed Federation doesn’t publish the
-composed supergraph schema until composition across all published subgraph
-succeed and schema checks pass.
+Managed Federation doesn’t publish the composed supergraph schema until composition across all published subgraph succeed and schema checks pass.
 
 With this approach, failed schema checks ([example](https://github.com/apollographql/supergraph-demo/pull/32)) are caught as close to the source of
 the change as possible, but only fully validated supergraph schemas are
@@ -411,26 +406,28 @@ published for use.
 
 ![schema-check-breaking-change](/docs/media/ci/schema-check-breaking-change.png)
 
-CI errors are caught as close to the source of the change as possible:
-
-* CI for the PR - vast majority of conflicts are detected here, closest to the source of change
-* CI for merge - some conflicts are caught here, that occurred after the PR was validated
-* [Managed Federation](https://www.apollographql.com/docs/federation/managed-federation/overview/) ultimately catches all errors prior to publishing for use:
-  * CI for multiple concurrent `rover subgraph publish` from multiple service repos
-  * central point of control & governance
-  * globally consistent schema checks and composition
-  * ensures supergraph schema artifact is safe to use before it's published to the Registry
-
 Breaking changes are sometimes intentional, and to accommodate this, Apollo
 Studio has the option to mark certain changes as safe in the UI, that provides a
 check report URL in your CI, so you can easily navigate to Apollo Studio to:
-review the check, mark things safe and then re-run your publish pipeline.
+review the check, mark things safe and then re-run your pipeline.
 
 ![schema-check-mark-safe](docs/media/schema-check-mark-safe.png)
 
-Once CI has published a new supergraph schema artifact to the Registry it can be deployed via various Gateway _CD_ strategies:
+Publish changes with `rover subgraph publish` which stores a new subgraph schema version to the Apollo Registry, even if schema checks don’t pass. Managed Federation
+composes published subgraphs and runs an additional set of
+federated schema checks in a globally consistent way before the composed
+supergraph schema is made available in the Apollo Registry and to the Apollo Uplink for the Gateway to use.
 
-Gateway Deployment & Update Strategies:
+[Managed Federation](https://www.apollographql.com/docs/federation/managed-federation/overview/) ultimately catches all errors prior to publishing for use:
+
+* CI for multiple concurrent `rover subgraph publish` from multiple service repos
+* central point of control & governance
+* globally consistent schema checks and composition
+* ensures supergraph schema artifact is safe to use before it's published to the Registry
+
+__CD__ for Gateway deployment & update
+
+Once CI has published a new supergraph schema artifact to the Registry it can be deployed via various Gateway _CD_ strategies:
 
 * __(1) Update-in-place (default)__ - the Gateway fleet polls the Apollo Uplink for updates
   * updates in place with no downtime
@@ -443,47 +440,56 @@ Gateway Deployment & Update Strategies:
   * simplifies `BlueGreen` and `Canary` deployment strategies
   * Gateway configuration fully encapsulated in the container image
 
-Both options are described in detail below.
+Both CD options are described in detail below.
 
-### Gateway CI/CD Option 1: Update-in-place
+### CI Setup
 
-#### Setup
+* Create [graph variants](https://www.apollographql.com/docs/studio/org/graphs/) in Apollo Studio for `dev`, `staging`, and `prod`:
+* Configure [schema checks](https://www.apollographql.com/docs/studio/schema-checks/) for your graph:
+  * [Federated composition checks](https://www.apollographql.com/docs/studio/schema-checks/#federated-composition-checks) will run against the subgraph schemas published to each variant.
+  * [Operation checks](https://www.apollographql.com/docs/studio/schema-checks/#types-of-checks) should be configured to validate real world [schema usage](https://www.apollographql.com/docs/studio/check-configurations/#using-apollo-studio-recommended) with usage data from `staging` and `prod` variants.
+  * Configure Gateway deployments to provide [usage reporting](https://www.apollographql.com/docs/apollo-server/api/plugin/usage-reporting/#gatsby-focus-wrapper) data for operation checks.
 
-* Create graph variants in Apollo Studio for each environment: `dev` , `staging`, and `prod`.
-  * composition checks will run against the subgraph schemas published to each variant
-  * operation checks should be configured to validate real world [schema usage](https://www.apollographql.com/docs/studio/check-configurations/#configuration-options) with staging and prod variants.
-* Create a [separate CI job](https://www.apollographql.com/docs/studio/schema-checks/#using-in-ci) for each variant of your schema - e.g. with separate git branches for each environment
-* Configure Gateways in each fleet for `dev` , `staging`, and `prod` to pull from their respective graph variants.
-  * with [usage reporting](https://www.apollographql.com/docs/apollo-server/api/plugin/usage-reporting/#gatsby-focus-wrapper), so operation checks can validate schema changes against actual field usage.
-  * with [schema reporting](https://www.apollographql.com/docs/studio/schema/schema-reporting/), to report what schema the Server/Gateway is running for deployment status
-* If you’re in a monorepo, you should consider [overriding the APOLLO_VCS_COMMIT and/or APOLLO_VCS_BRANCH](https://www.apollographql.com/docs/rover/configuring/#overriding) to correlate schema changes for subgraphs
+* For each graph variant: `dev`, `staging`, and `prod`:
+  * config pull requests: [subgraph-check.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-check.yml)
+    * `rover subgraph check`
+  * config merge/push: [subgraph-publish.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-publish.yml)
+    * run after the subgraph service has been deployed
+    * `rover subgraph check`
+    * `rover subgraph publish`
+  * Managed Federation
+    * Runs schema checks after each `rover subgraph publish`
+    * Composes a supergraph schema if all checks pass
+    * Makes the supergraph schema available in the:
+      * Registry - for retrieval via `rover supergraph fetch`
+      * Uplink - that the Gateway can poll for live updates.
 
-_CI_ - for each graph variant:
+* If you’re in a monorepo:
+  * Consider using 3-way merges and [overriding the APOLLO_VCS_COMMIT and/or APOLLO_VCS_BRANCH](https://www.apollographql.com/docs/rover/configuring/#overriding) to correlate schema changes for subgraphs.
 
-* config pull requests: [subgraph-check.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-check.yml)
-  * `rover subgraph check`
-* config merge/push: [subgraph-publish.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-publish.yml), [example 2](https://github.com/apollographql/acephei-products/blob/main/.github/workflows/deploy-staging.yaml)
-  * run after the subgraph service has been deployed
-  * `rover subgraph check`
-  * `rover subgraph publish`
-* Managed Federation
-  * [Federated composition checks](https://www.apollographql.com/docs/studio/schema-checks/#federated-composition-checks) across all published subgraphs
-  * Publishes a validated supergraph schema (static artifact) to the Uplink for the Gateway to use.
+### CD: Update Gateway In Place
 
-_CD_ - for each graph variant:
+The default Gateway configuration for Managed Federation is to update the Gateway in place when a new supergraph schema is published to the Uplink. Gateways in the fleet poll the Uplink every 10 seconds by default, so there will be a fast rolling upgrade as Gateways check the Uplink, without the need to restart the Gateway.
 
-* [Configure the Gateways deployed to your fleet](https://www.apollographql.com/docs/federation/managed-federation/setup/#3-modify-the-gateway-if-necessary) to use Managed Federation (the default)
-  * this enabled automatic updates without needing to restart your Gateway
+Update in place is useful for any long-lived Gateway instance where an immediate update of the Gateway instance's supergraph schema is desired. This is useful for long-lived VMs, Kubernetes `Deployments`, or even Serverless functions that may be cached outside of operator control.
 
-### Gateway CI/CD Option 2 - Immutable container deployments
+Steps:
 
-This option builds on the CI steps from option (1) above but adds extended CI to:
+* [Configure the Gateways in each fleet](https://www.apollographql.com/docs/federation/managed-federation/setup/#3-modify-the-gateway-if-necessary) (`dev`, `staging`, `prod`) to:
+  * pull supergraph schema from their respective graph variants, via the [Apollo Uplink](https://www.apollographql.com/docs/federation/quickstart-pt-2/#managed-federation-basics).
+  * provide [usage reporting](https://www.apollographql.com/docs/apollo-server/api/plugin/usage-reporting/#gatsby-focus-wrapper) data for operation checks.
+
+### CD: Immutable Container Deploys
+
+This option produces an immutable Gateway container image with embedded supergraph schema that is most suitable for `BlueGreen` and `Canary` deployments. In this approach a new Gateway `Deployment` is spun up and traffic is shifted from the previous `Deployment` to the current `Deployment` via CD automation or with a Progressive Delivery Controller like [Argo Rollouts](https://argoproj.github.io/argo-rollouts/).
+
+To produce the immutable Gateway container image, this option extends the CI steps above:
 
 1. Detect changes to the supergraph schema built via Managed Federation in Apollo Studio
 2. Create a PR to bump [supergraph.graphql](supergraph.graphql) so Git is a source of truth
 3. Build/push a Gateway container image with an embedded supergraph schema
 
-CD can then be done using GitOps, with `BlueGreen` and `Canary` deployments, or other deployment workflows.
+CD can then be done with `BlueGreen` and `Canary` deployments, GitOps, and/or other workflows.
 
 #### Extended CI Steps
 
