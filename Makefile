@@ -65,10 +65,13 @@ local: supergraph install run
 managed: introspect publish install run-managed
 
 .PHONY: run
+run: export GATEWAY_ENV=Prod
+run: export GATEWAY_SUPERGRAPH_SDL=supergraph.graphql
 run:
-	node index.js supergraph.graphql
+	node index.js
 
 .PHONY: run-managed
+run-managed: export GATEWAY_ENV=Prod
 run-managed:
 	.scripts/run-managed.sh
 
@@ -84,8 +87,10 @@ docker-build: supergraph
 	docker build -t my/supergraph-demo .
 
 .PHONY: docker-run
+docker-run: export GATEWAY_ENV=Prod
+docker-run: export GATEWAY_SUPERGRAPH_SDL=supergraph.graphql
 docker-run:
-	docker run --rm -d --name=gateway -p 4000:4000 my/supergraph-demo
+	docker run --rm -d --name=gateway -p 4000:4000 --env GATEWAY_ENV --env GATEWAY_SUPERGRAPH_SDL my/supergraph-demo
 	@sleep 2
 	docker logs gateway
 

@@ -3,5 +3,8 @@ services:
   web:
     container_name: graph-router
     build: .
+    environment:
+      - GATEWAY_SUPERGRAPH_SDL=supergraph.graphql
+      - GATEWAY_ENV=Prod
     ports:
       - "4000:4000"
