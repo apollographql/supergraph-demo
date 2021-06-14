@@ -9,4 +9,4 @@ RUN npm install
 COPY index.js .
 COPY supergraph.graphql .
 
-CMD [ "node", "index.js", "supergraph.graphql"]
+CMD [ "node", "index.js" ]
