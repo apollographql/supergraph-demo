@@ -20,6 +20,10 @@ spec:
         env:
         - name: GATEWAY_PORT
           value: "3999"
+        - name: GATEWAY_ENV
+          value: "Prod"
+        - name: GATEWAY_SUPERGRAPH_SDL
+          value: "supergraph.graphql"
         ports:
         - containerPort: 3999
 ---
