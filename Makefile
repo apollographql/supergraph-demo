@@ -7,6 +7,9 @@ demo: supergraph docker-up query docker-down
 .PHONY: demo-managed
 demo-managed: introspect publish docker-up-managed query docker-down
 
+.PHONY: demo-k8s
+demo-k8s: ci-k8s
+
 .PHONY: docker-up
 docker-up:
 	docker-compose up -d
@@ -119,6 +122,10 @@ k8s-down:
 	kubectl delete -f k8s/router.yaml
 	kind delete cluster
 
+.PHONY: ci-k8s
+ci-k8s:
+	@.scripts/ci-k8s.sh
+
 .PHONY: ci-local
 ci-local:
 	.scripts/ci-local.sh
@@ -147,13 +154,17 @@ act-subgraph-check:
 act-subgraph-publish:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/subgraph-publish.yml --secret-file graph-api.env
 
+.PHONY: act-supergraph-build-webhook
+act-supergraph-build-webhook:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/supergraph-build-webhook.yml -s GITHUB_TOKEN --secret-file graph-api.env --detect-event
+
 .PHONY: act-supergraph-gateway-docker-push
 act-supergraph-gateway-docker-push:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/supergraph-gateway-docker-push.yml --secret-file docker.secrets 
 
-.PHONY: act-supergraph-build-webhook
-act-supergraph-build-webhook:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/supergraph-build-webhook.yml -s GITHUB_TOKEN --secret-file graph-api.env --detect-event
+.PHONY: act-k8s
+act-k8s:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/supergraph-gateway-docker-push.yml -j k8s --secret-file docker.secrets
 
 .PHONY: act-rebase
 act-rebase:
