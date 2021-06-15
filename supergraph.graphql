@@ -62,6 +62,11 @@ enum CANCELLED_REASON {
   OTHER
 }
 
+enum Color {
+  BLUE
+  GREEN
+}
+
 """
 https://shopify.dev/docs/storefront-api/reference/common-objects/countrycode
 """
@@ -100,12 +105,12 @@ type Department {
 scalar join__FieldSet
 
 enum join__Graph {
-  CUSTOMERS @join__graph(name: "customers" url: "https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/%GATEWAY_ENV%/graphql")
-  INVENTORY @join__graph(name: "inventory" url: "https://2lc1ekf3dd.execute-api.us-east-1.amazonaws.com/%GATEWAY_ENV%/graphql")
-  LOCATIONS @join__graph(name: "locations" url: "https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/%GATEWAY_ENV%/graphql")
-  ORDERS @join__graph(name: "orders" url: "https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/%GATEWAY_ENV%/graphql")
-  PRODUCTS @join__graph(name: "products" url: "https://7bssbnldib.execute-api.us-east-1.amazonaws.com/%GATEWAY_ENV%/graphql")
-  REVIEWS @join__graph(name: "reviews" url: "https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/%GATEWAY_ENV%/graphql")
+  CUSTOMERS @join__graph(name: "customers" url: "https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/Prod/graphql")
+  INVENTORY @join__graph(name: "inventory" url: "https://2lc1ekf3dd.execute-api.us-east-1.amazonaws.com/Prod/graphql")
+  LOCATIONS @join__graph(name: "locations" url: "https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql")
+  ORDERS @join__graph(name: "orders" url: "https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql")
+  PRODUCTS @join__graph(name: "products" url: "https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql")
+  REVIEWS @join__graph(name: "reviews" url: "https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql")
 }
 
 type LineItem {
