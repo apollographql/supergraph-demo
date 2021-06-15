@@ -9,6 +9,7 @@ on:
       - "package.json"
       - "index.js"
       - "supergraph.graphql"
+      - "k8s/*"
 
 jobs:
   gateway-docker:
