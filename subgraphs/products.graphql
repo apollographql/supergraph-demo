@@ -7,11 +7,6 @@ type Department {
   url: String
 }
 
-enum Color {
-  BLUE
-  GREEN
-}
-
 type Money {
   amount: Float
   currencyCode: CURRENCY_CODE
