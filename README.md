@@ -551,7 +551,7 @@ You'll need:
 then run:
 
 ```sh
-make k8s-demo
+make demo-k8s
 ```
 
 which creates:
