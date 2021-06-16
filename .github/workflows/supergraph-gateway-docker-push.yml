@@ -10,6 +10,7 @@ on:
       - "index.js"
       - "supergraph.graphql"
       - "k8s/*"
+      - ".scripts/*"
 
 jobs:
   gateway-docker:
