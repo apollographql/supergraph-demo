@@ -548,14 +548,18 @@ You'll need:
 
 * [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
-Create a local k8s cluster with the Ambassador Ingress Controller and create a
-graph-router `Deployment` with 3 replicas, a `Service`, and an `Ingress`:
+then run:
 
 ```sh
-make k8s-up
+make k8s-demo
 ```
 
-which uses the following config from [k8s/router.yaml](k8s/router.yaml):
+which creates:
+
+* local k8s cluster with the Ambassador Ingress Controller
+* graph-router `Deployment` with 3 replicas, a `Service`, and an `Ingress`
+
+using [k8s/router.yaml](k8s/router.yaml):
 
 ```yaml
 apiVersion: apps/v1
@@ -580,6 +584,10 @@ spec:
         env:
         - name: GATEWAY_PORT
           value: "3999"
+        - name: GATEWAY_ENV
+          value: "Prod"
+        - name: GATEWAY_SUPERGRAPH_SDL
+          value: "supergraph.graphql"
         ports:
         - containerPort: 3999
 ---
@@ -614,50 +622,79 @@ spec:
               number: 4001
 ```
 
-To see everything running run `kubectl get all`:
-
-```
-NAME                              READY   STATUS    RESTARTS   AGE
-pod/graph-router-c7577547-9vkl4   1/1     Running   0          2m
-pod/graph-router-c7577547-hpzrb   1/1     Running   0          2m
-pod/graph-router-c7577547-nbfcp   1/1     Running   0          2m
-
-NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-service/graphql-service   ClusterIP   10.96.115.47   <none>        4001/TCP   2m
-service/kubernetes        ClusterIP   10.96.0.1      <none>        443/TCP    8m
-
-NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/graph-router   3/3     3            3           2m
-
-NAME                                    DESIRED   CURRENT   READY   AGE
-replicaset.apps/graph-router-c7577547   3         3         3       2m
-```
-
-Issue a query against the graph router:
+`make demo-k8s` then runs the following in a loop until the query succeeds or 2 min timeout:
 
 ```sh
+kubectl get all
 make k8s-query
 ```
 
-If the services are still starting you may get one of the following:
-
-* `upstream request timeout`
-* `upstream connect error or disconnect/reset before headers. reset reason: connection failure`
-
-but after the services have started you'll see:
+Interim results while services are starting:
 
 ```
-.scripts/query.sh 80
+NAME                                READY   STATUS              RESTARTS   AGE
+pod/graph-router-6c64bf96f4-k9bcj   0/1     ContainerCreating   0          4s
+pod/graph-router-6c64bf96f4-ks6l4   0/1     ContainerCreating   0          4s
+pod/graph-router-6c64bf96f4-wkgtq   0/1     ContainerCreating   0          4s
+
+NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/graphql-service   ClusterIP   10.96.70.100   <none>        4001/TCP   4s
+service/kubernetes        ClusterIP   10.96.0.1      <none>        443/TCP    106s
+
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/graph-router   0/3     3            0           4s
+
+NAME                                      DESIRED   CURRENT   READY   AGE
+replicaset.apps/graph-router-6c64bf96f4   3         3         0       4s
+Smoke test
 -------------------------------------------------------------------------------------------
 curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ bestSellers { title } } " }' http://localhost:80/
-{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    41    0     0  100    41      0   6833 --:--:-- --:--:-- --:--:--  6833
+curl: (52) Empty reply from server
+
+Error: query failed
+ - got:
+ - expecting:{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}
 -------------------------------------------------------------------------------------------
 ```
 
-Tear down the cluster:
+Success after services are started:
 
-```sh
-make k8s-down
+```
+NAME                                READY   STATUS    RESTARTS   AGE
+pod/graph-router-6c64bf96f4-k9bcj   1/1     Running   0          45s
+pod/graph-router-6c64bf96f4-ks6l4   1/1     Running   0          45s
+pod/graph-router-6c64bf96f4-wkgtq   1/1     Running   0          45s
+
+NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/graphql-service   ClusterIP   10.96.70.100   <none>        4001/TCP   45s
+service/kubernetes        ClusterIP   10.96.0.1      <none>        443/TCP    2m27s
+
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/graph-router   3/3     3            3           45s
+
+NAME                                      DESIRED   CURRENT   READY   AGE
+replicaset.apps/graph-router-6c64bf96f4   3         3         3       45s
+Smoke test
+-------------------------------------------------------------------------------------------
+curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ bestSellers { title } } " }' http://localhost:80/
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   116  100    75  100    41     36     20  0:00:02  0:00:02 --:--:--    56
+{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}
+Success!
+-------------------------------------------------------------------------------------------
+```
+
+`make demo-k8s` then cleans up:
+
+```
+deployment.apps "graph-router" deleted
+service "graphql-service" deleted
+ingress.networking.k8s.io "graphql-ingress" deleted
+Deleting cluster "kind" ...
 ```
 
 ## Learn More

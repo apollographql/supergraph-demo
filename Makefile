@@ -8,7 +8,7 @@ demo: supergraph docker-up query docker-down
 demo-managed: introspect publish docker-up-managed query docker-down
 
 .PHONY: demo-k8s
-demo-k8s: ci-k8s
+demo-k8s: k8s-up k8s-smoke k8s-down
 
 .PHONY: docker-up
 docker-up:
@@ -103,11 +103,7 @@ docker-stop:
 
 .PHONY: k8s-up
 k8s-up:
-	kind create cluster --image kindest/node:v1.19.7 --config=k8s/cluster.yaml --wait 5m
-	kubectl apply -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-crds.yaml
-	kubectl apply -n ambassador -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-kind.yaml
-	kubectl wait --timeout=180s -n ambassador --for=condition=deployed ambassadorinstallations/ambassador
-	kubectl apply -f k8s/router.yaml
+	.scripts/k8s-up.sh
 
 .PHONY: k8s-query
 k8s-query:
@@ -115,12 +111,11 @@ k8s-query:
 
 .PHONY: k8s-smoke
 k8s-smoke:
-	.scripts/smoke.sh 80
+	.scripts/k8s-smoke.sh 80
 
 .PHONY: k8s-down
 k8s-down:
-	kubectl delete -f k8s/router.yaml
-	kind delete cluster
+	.scripts/k8s-down.sh
 
 .PHONY: ci-k8s
 ci-k8s:

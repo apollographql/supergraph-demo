@@ -6,10 +6,12 @@ echo Smoke test
 
 sleep 2
 
-ACT=`curl -X POST \
--H "Content-Type: application/json" \
---data '{ "query": "{ bestSellers { title } } " }' \
-http://localhost:$PORT/`
+CURL="curl -X POST -H \"Content-Type: application/json\" --data '{ \"query\": \"{ bestSellers { title } } \" }' http://localhost:$PORT/"
+
+echo -------------------------------------------------------------------------------------------
+echo $CURL
+ACT=$(bash -c "$CURL")
+
 
 EXP='{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}'
 echo $ACT
@@ -19,5 +21,7 @@ else
     echo "Error: query failed"
     echo " - got:$ACT"
     echo " - expecting:$EXP"
+    echo -------------------------------------------------------------------------------------------
     exit 1
 fi
+echo -------------------------------------------------------------------------------------------
