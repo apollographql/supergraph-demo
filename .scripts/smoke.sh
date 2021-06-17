@@ -6,13 +6,8 @@ echo Smoke test
 
 sleep 2
 
-CURL="curl -X POST -H \"Content-Type: application/json\" --data '{ \"query\": \"{ bestSellers { title } } \" }' http://localhost:$PORT/"
-
 echo -------------------------------------------------------------------------------------------
-echo $CURL
-ACT=$(bash -c "$CURL")
-
-
+ACT=$(set -x; curl -X POST -H 'Content-Type: application/json' --data '{ "query": "{ bestSellers { title } } " }' http://localhost:$PORT/)
 EXP='{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}'
 echo $ACT
 if [ "$ACT" = "$EXP" ]; then

@@ -556,7 +556,7 @@ make demo-k8s
 
 which creates:
 
-* local k8s cluster with the Ambassador Ingress Controller
+* local k8s cluster with the NGINX Ingress Controller
 * graph-router `Deployment` with 3 replicas, a `Service`, and an `Ingress`
 
 using [k8s/router.yaml](k8s/router.yaml):
@@ -608,7 +608,7 @@ kind: Ingress
 metadata:
   name: graphql-ingress
   annotations:
-    kubernetes.io/ingress.class: ambassador
+    kubernetes.io/ingress.class: nginx
 spec:
   rules:
   - http:
