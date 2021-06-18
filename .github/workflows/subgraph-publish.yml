@@ -22,7 +22,7 @@ jobs:
             rover-version: "latest"
     env:
       APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
-      GRAPH_REF: supergraph-preview@current
+      GRAPH_REF: supergraph-router@dev
 
     name: ${{ matrix.subgraph }}
 

@@ -5,7 +5,7 @@ services:
     build: ./router
     environment:
       - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
-      - APOLLO_GRAPH_REF=supergraph-preview@current
+      - APOLLO_GRAPH_REF=supergraph-router@dev
     env_file: # create with make graph-api-env
       - graph-api.env
     ports:

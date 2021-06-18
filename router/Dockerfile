@@ -7,6 +7,5 @@ COPY package.json .
 RUN npm install
 
 COPY router.js .
-COPY supergraph.graphql .
 
 CMD [ "node", "router.js" ]

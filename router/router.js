@@ -8,7 +8,7 @@ const embeddedSchema = process.env.APOLLO_SCHEMA_CONFIG_EMBEDDED == "true" ? tru
 const config = {};
 
 if (embeddedSchema){
-  const supergraph = "supergraph.graphql"
+  const supergraph = "/etc/config/supergraph.graphql"
   config['supergraphSdl'] = readFileSync(supergraph).toString();
   console.log('Starting Apollo Gateway in local mode ...');
   console.log(`Using local: ${supergraph}`)

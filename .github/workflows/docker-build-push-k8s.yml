@@ -5,9 +5,8 @@ on:
     branches:
       - 'main'
     paths:
-      - "Dockerfile"
-      - "package.json"
-      - "index.js"
+      - "router/**"
+      - "subgraphs/**"
       - "supergraph.graphql"
       - "k8s/*"
       - ".scripts/*"

@@ -39,11 +39,11 @@ supergraph: config compose
 
 .PHONY: config
 config:
-	.scripts/config.sh > ./router/supergraph.yaml
+	.scripts/config.sh > ./supergraph.yaml
 
 .PHONY: compose
 compose:
-	rover supergraph compose --config ./router/supergraph.yaml > ./router/supergraph.graphql
+	rover supergraph compose --config ./supergraph.yaml > ./supergraph.graphql
 
 .PHONY: publish
 publish:
@@ -64,6 +64,10 @@ check-products:
 .PHONY: check-all
 check-all:
 	.scripts/check-all.sh
+
+.PHONY: k8s-config
+k8s-config:
+	.scripts/k8s-router-config.sh
 
 .PHONY: k8s-up
 k8s-up:
@@ -99,7 +103,7 @@ act:
 
 .PHONY: act-k8s
 act-k8s:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/supergraph-gateway-docker-push.yml -j k8s --secret-file docker.secrets
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/docker-build-push-k8s.yml -j k8s --secret-file docker.secrets
 
 .PHONY: act-subgraph-check
 act-subgraph-check:
@@ -115,7 +119,7 @@ act-supergraph-build-webhook:
 
 .PHONY: act-docker-build-push
 act-docker-build-push:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/supergraph-gateway-docker-push.yml -j docker-build-push --secret-file docker.secrets
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/docker-build-push-k8s.yml -j docker-build-push --secret-file docker.secrets
 
 .PHONY: act-rebase
 act-rebase:

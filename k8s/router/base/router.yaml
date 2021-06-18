@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: router-deployment
+  labels:
+    app: router
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: router
+  template:
+    metadata:
+      labels:
+        app: router
+    spec:
+      containers:
+        - name: router
+          image: prasek/supergraph-router:latest
+          volumeMounts:
+          - name: supergraph-volume
+            mountPath: /etc/config
+          env:
+          - name: APOLLO_SCHEMA_CONFIG_EMBEDDED
+            value: "true"
+          ports:
+          - containerPort: 4000
+      volumes:
+        - name: supergraph-volume
+          configMap:
+            name: supergraph
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: router-service
+spec:
+  selector:
+    app: router
+  ports:
+    - protocol: TCP
+      port: 4000
+      targetPort: 4000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: router-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: router-service
+            port: 
+              number: 4000

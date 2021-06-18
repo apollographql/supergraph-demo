@@ -17,7 +17,6 @@ spec:
       containers:
       - name: products
         image: prasek/subgraph-products:latest
-        imagePullPolicy: Always
         ports:
         - containerPort: 4000
 ---
@@ -52,7 +51,6 @@ spec:
       containers:
       - name: users
         image: prasek/subgraph-users:latest
-        imagePullPolicy: Always
         ports:
         - containerPort: 4000
 ---
@@ -87,7 +85,6 @@ spec:
       containers:
       - name: inventory
         image: prasek/subgraph-inventory:latest
-        imagePullPolicy: Always
         ports:
         - containerPort: 4000
 ---

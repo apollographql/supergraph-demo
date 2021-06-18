@@ -16,7 +16,7 @@ Contents:
   * [Overview](#overview)
   * [CI Setup](#ci-setup)
   * [CD: Update Gateway In Place](#cd-update-gateway-in-place)
-  * [CD: Immutable Container Deploys](#cd-immutable-container-deploys)
+  * [CD: GitOps via Extended CI](#cd-gitops-via-extended-ci)
 * [Deploying to Kubernetes](#deploying-to-kubernetes)
 * [Learn More](#learn-more)
 
@@ -75,20 +75,22 @@ which does the following:
 make supergraph
 ```
 
-which runs the local `rover supergraph compose` command:
+which runs:
 
 ```
 rover supergraph compose --config ./supergraph.yaml > supergraph.graphql
 ```
 
-and then runs a local config with `docker-compose`:
+and then runs:
 
 ```
 docker-compose up -d
+
 Creating router    ... done
 Creating inventory ... done
 Creating users     ... done
 Creating products  ... done
+
 Starting Apollo Gateway in local mode ...
 Using local: supergraph.graphql
 🚀 Graph Router ready at http://localhost:4000/
@@ -100,7 +102,7 @@ Using local: supergraph.graphql
 make query
 ```
 
-which issues the following query that fetches from 3 subgraphs:
+which issues the following query that fetches across 3 subgraphs:
 
 ```ts
 {
@@ -117,7 +119,7 @@ which issues the following query that fetches from 3 subgraphs:
 }
 ```
 
-which returns the following results:
+with results like:
 
 ```ts
 {
@@ -177,7 +179,7 @@ services:
     build: ./router
     environment:
       - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
-      - APOLLO_GRAPH_REF=supergraph-preview@current
+      - APOLLO_GRAPH_REF=supergraph-router@dev
     env_file: # create with make graph-api-env
       - graph-api.env
     ports:
@@ -209,11 +211,11 @@ make publish
 Interim composition errors may surface as each subgraph is published:
 
 ```
-+ rover subgraph publish supergraph-preview@current --routing-url http://products:4000/graphql --schema subgraphs/products/products.graphql --name products
++ rover subgraph publish supergraph-router@dev --routing-url http://products:4000/graphql --schema subgraphs/products/products.graphql --name products
 
-Publishing SDL to supergraph-preview:current (subgraph: products) using credentials from the default profile.
-A new subgraph called 'products' for the 'supergraph-preview' graph was created.
-The gateway for the 'supergraph-preview' graph was NOT updated with a new schema
+Publishing SDL to supergraph-router:dev (subgraph: products) using credentials from the default profile.
+A new subgraph called 'products' for the 'supergraph-router' graph was created.
+The gateway for the 'supergraph-router' graph was NOT updated with a new schema
 
 WARN: The following composition errors occurred:
 Unknown type "User".
@@ -223,11 +225,11 @@ Unknown type "User".
 However once all subgraphs are published the supergraph will be updated, for example:
 
 ```
-+ rover subgraph publish supergraph-preview@current --routing-url https://users:4000/graphql --schema subgraphs/users/users.graphql --name users
++ rover subgraph publish supergraph-router@dev --routing-url https://users:4000/graphql --schema subgraphs/users/users.graphql --name users
 
-Publishing SDL to supergraph-preview:current (subgraph: users) using credentials from the default profile.
-A new subgraph called 'users' for the 'supergraph-preview' graph was created
-The gateway for the 'supergraph-preview' graph was updated with a new schema, composed from the updated 'users' subgraph
+Publishing SDL to supergraph-router:dev (subgraph: users) using credentials from the default profile.
+A new subgraph called 'users' for the 'supergraph-router' graph was created
+The gateway for the 'supergraph-router' graph was updated with a new schema, composed from the updated 'users' subgraph
 ```
 
 Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the subgraphs it's composed from:
@@ -247,7 +249,7 @@ Creating network "supergraph-demo_default" with the default driver
 Creating graph-router ... done
 
 Starting Apollo Gateway in managed mode ...
-Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-preview@current/
+Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-router@dev/
 🚀 Server ready at http://localhost:4000/
 ```
 
@@ -275,7 +277,7 @@ make docker-up-managed
 
 ```
 Starting Apollo Gateway in managed mode ...
-Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-preview@current/
+Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-router@dev/
 🚀 Server ready at http://localhost:4000/
 ```
 
@@ -401,12 +403,16 @@ Once CI has published a new supergraph schema artifact to the Registry it can be
   * updates in place with no downtime
   * works with all deployment types including VMs, Kubernetes, & Serverless
   * simple update option that helps rollout changes quickly to an existing Gateway fleet
-* __(2) Immutable container deployments__ via extended CI & GitOps
-  * Gateway container image with embedded supergraph schema when changes detected:
+* __(2) GitOps__ via extended CI
+  * Auto-generate a new supergraph `ConfigMap` via `kustomize` when changes detected via:
     * [Supergraph build webhooks](https://www.apollographql.com/blog/announcement/webhooks/) - when a new supergraph schema is created
     * `rover supergraph fetch` - to poll the Registry for updates
-  * simplifies `BlueGreen` and `Canary` deployment strategies
-  * Gateway configuration fully encapsulated in the container image
+  * Gateway `Deployment` references new supergraph schema `ConfigMap` via:
+    * `kubectl apply` in place - resulting in a [rolling upgrade](https://github.com/kubernetes-sigs/kustomize/blob/master/examples/configGeneration.md)
+    * Progressive delivery controllers like [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) or [Flagger](https://flagger.app/)
+  * Suitable for `BlueGreen` and `Canary` deployment strategies
+  * Gateway `Deployments` can be rolled back to an earlier supergraph config:
+    * Rollback to a `Deployment` that referenced an earlier supergraph `ConfigMap`
 
 Both CD options are described in detail below.
 
@@ -447,17 +453,26 @@ Steps:
   * pull supergraph schema from their respective graph variants, via the [Apollo Uplink](https://www.apollographql.com/docs/federation/quickstart-pt-2/#managed-federation-basics).
   * provide [usage reporting](https://www.apollographql.com/docs/apollo-server/api/plugin/usage-reporting/#gatsby-focus-wrapper) data for operation checks.
 
-### CD: Immutable Container Deploys
+### CD: GitOps via Extended CI
 
-This option produces an immutable Gateway container image with embedded supergraph schema that is most suitable for `BlueGreen` and `Canary` deployments. In this approach a new Gateway `Deployment` is spun up and traffic is shifted from the previous `Deployment` to the current `Deployment` via CD automation or with a Progressive Delivery Controller like [Argo Rollouts](https://argoproj.github.io/argo-rollouts/).
+A new supergraph `ConfigMap` is generated using `kustomize` when changes are detected via:
+* [Supergraph build webhooks](https://www.apollographql.com/blog/announcement/webhooks/) - when a new supergraph schema is created
+* `rover supergraph fetch` - to poll the Registry for updates
 
-To produce the immutable Gateway container image, this option extends the CI steps above:
+An updated Gateway `Deployment` references new supergraph schema `ConfigMap` via:
+* `kubectl apply` in place - resulting in a [rolling upgrade](https://github.com/kubernetes-sigs/kustomize/blob/master/examples/configGeneration.md)
+* Progressive delivery controllers like [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) or [Flagger](https://flagger.app/)
+*Suitable for `BlueGreen` and `Canary` deployment strategies
+
+Gateway `Deployments` can be rolled back to an earlier supergraph schema by applying an earlier version of the Gateway `Deployment` that referenced an earlier supergraph `ConfigMap`.
+
+To produce the new supergraph schema `Config Map`, this option extends the CI steps above:
 
 1. Detect changes to the supergraph schema built via Managed Federation in Apollo Studio
 2. Create a PR to bump [supergraph.graphql](supergraph.graphql) so Git is a source of truth
-3. Build/push a Gateway container image with an embedded supergraph schema
+3. Generate a new supergraph `ConfigMap` and associated Gateway `Deployment`
 
-CD can then be done with `BlueGreen` and `Canary` deployments, GitOps, and/or other workflows.
+The resulting Gateway configuration can be applied directly with `kubectl`, with GitOps, and/or using `BlueGreen` and `Canary` deployments with a progressive delivery controller.
 
 #### Extended CI Steps
 
@@ -474,9 +489,9 @@ CD can then be done with `BlueGreen` and `Canary` deployments, GitOps, and/or ot
    * Additional CI checks on the supergraph schema are required for the PR to merge
    * Auto-merged when CI checks pass
 
-3. Build a Gateway container image with embedded supergraph schema
-   * Workflow: [supergraph-gateway-docker-push.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/supergraph-gateway-docker-push.yml)
-   * Detects changes to `supergraph.graphql` when `Bump supergraph schema` is merged
+3. Generate a new Gateway `Deployment` and `ConfigMap` using `kustomize`
+   * Once changes to `supergraph.graphql` when `Bump supergraph schema` is merged
+   * Typically in a separate config repo
 
 #### Extended CI Steps (Details)
 
@@ -498,22 +513,17 @@ CD can then be done with `BlueGreen` and `Canary` deployments, GitOps, and/or ot
    * [supergraph-build-webhook.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/supergraph-build-webhook.yml)
    * using a GitHub action like [Create Pull Request](https://github.com/marketplace/actions/create-pull-request) - see [concepts & guidelines](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md)
    * ![pr-created](docs/media/ci/supergraph-pr-automerged.png)
+   * uses `kustomize` to generate:
+     * a new supergraph schema `ConfigMap`
+     * a new Gateway `Deployment` that references the new `ConfigMap`
 
-5. Docker build/push a new Gateway container image
-   * [supergraph-gateway-docker-push.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/supergraph-gateway-docker-push.yml)
-   * Using this [Dockerfile](Dockerfile)
-   * ![docker-build-push](docs/media/ci/supergraph-docker-build-push.png)
-
-6. Gateway image published to DockerHub
-   * Container image with embedded supergraph schema published to a container registry:
-   * ![gateway-image-published](docs/media/ci/gateway-image-published.png)
-
-Once the new Gateway container image is created an updated `Deployment` manifest can be created and committed to the config repo for the Gateway.
+5. Apply the updated Gateway `Deployment` and supergraph `ConfigMap`
 
 ## Deploying to Kubernetes
 
 You'll need:
 
+* [kubectl](https://kubernetes.io/docs/tasks/tools/)
 * [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
 then run:
@@ -522,20 +532,100 @@ then run:
 make demo-k8s
 ```
 
-which creates:
+which generates a graph router `Deployment` and supergraph `ConfigMap` using:
+
+```
+kubectl kustomize ./ > ./k8s/router.yaml
+```
+
+and then creates:
 
 * local k8s cluster with the NGINX Ingress Controller
-* graph-router `Deployment` with 3 replicas, a `Service`, and an `Ingress`
+* graph-router `Deployment` configured to use a supergraph `ConfigMap`
+* graph-router `Service` and `Ingress`
 
 using [k8s/router.yaml](k8s/router.yaml):
 
 ```yaml
+apiVersion: v1
+data:
+  supergraph.graphql: |
+    schema
+      @core(feature: "https://specs.apollo.dev/core/v0.1"),
+      @core(feature: "https://specs.apollo.dev/join/v0.1")
+    {
+      query: Query
+    }
+
+    ...
+
+    enum join__Graph {
+      INVENTORY @join__graph(name: "inventory" url: "http://inventory:4000/graphql")
+      PRODUCTS @join__graph(name: "products" url: "http://products:4000/graphql")
+      USERS @join__graph(name: "users" url: "https://users:4000/graphql")
+    }
+
+    type Product
+      @join__owner(graph: PRODUCTS)
+      @join__type(graph: PRODUCTS, key: "id")
+      @join__type(graph: PRODUCTS, key: "sku package")
+      @join__type(graph: PRODUCTS, key: "sku variation{id}")
+      @join__type(graph: INVENTORY, key: "id")
+    {
+      id: ID! @join__field(graph: PRODUCTS)
+      sku: String @join__field(graph: PRODUCTS)
+      package: String @join__field(graph: PRODUCTS)
+      variation: ProductVariation @join__field(graph: PRODUCTS)
+      dimensions: ProductDimension @join__field(graph: PRODUCTS)
+      createdBy: User @join__field(graph: PRODUCTS, provides: "totalProductsCreated")
+      delivery(zip: String): DeliveryEstimates @join__field(graph: INVENTORY, requires: "dimensions{size weight}")
+    }
+
+    type ProductDimension {
+      size: String
+      weight: Float
+    }
+
+    type ProductVariation {
+      id: ID!
+    }
+
+    type Query {
+      allProducts: [Product] @join__field(graph: PRODUCTS)
+      product(id: ID!): Product @join__field(graph: PRODUCTS)
+    }
+
+    type User
+      @join__owner(graph: USERS)
+      @join__type(graph: USERS, key: "email")
+      @join__type(graph: PRODUCTS, key: "email")
+    {
+      email: ID! @join__field(graph: USERS)
+      name: String @join__field(graph: USERS)
+      totalProductsCreated: Int @join__field(graph: USERS)
+    }
+kind: ConfigMap
+metadata:
+  name: supergraph-c22698b7b9
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: router-service
+spec:
+  ports:
+  - port: 4000
+    protocol: TCP
+    targetPort: 4000
+  selector:
+    app: router
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: router-deployment
   labels:
     app: router
+  name: router-deployment
 spec:
   replicas: 1
   selector:
@@ -547,42 +637,38 @@ spec:
         app: router
     spec:
       containers:
-      - name: router
-        image: prasek/supergraph-router:latest
-        env:
+      - env:
         - name: APOLLO_SCHEMA_CONFIG_EMBEDDED
           value: "true"
+        image: prasek/supergraph-router:latest
+        name: router
         ports:
         - containerPort: 4000
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: router-service
-spec:
-  selector:
-    app: router
-  ports:
-    - protocol: TCP
-      port: 4000
-      targetPort: 4000
+        volumeMounts:
+        - mountPath: /etc/config
+          name: supergraph-volume
+      volumes:
+      - configMap:
+          name: supergraph-c22698b7b9
+        name: supergraph-volume
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: router-ingress
   annotations:
     kubernetes.io/ingress.class: nginx
+  name: router-ingress
 spec:
   rules:
   - http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
+      - backend:
           service:
             name: router-service
             port:
+              number: 4000
+        path: /
+        pathType: Prefix
 ```
 
 and 3 subgraph services [k8s/subgraphs.yaml](k8s/subgraphs.yaml):

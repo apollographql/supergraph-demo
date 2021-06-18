@@ -1,0 +1,6 @@
+resources:
+- k8s/router/base/router.yaml
+configMapGenerator:
+- name: supergraph
+  files:
+  - ./supergraph.graphql
