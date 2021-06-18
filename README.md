@@ -68,17 +68,20 @@ You can federate multiple subgraphs into a supergraph using:
 make demo
 ```
 
+which does the following:
+
 ```sh
 # build a supergraph from 3 subgraphs: products, users, inventory
 make supergraph
 ```
 
 which runs the local `rover supergraph compose` command:
+
 ```
 rover supergraph compose --config ./supergraph.yaml > supergraph.graphql
 ```
 
-and then runs `docker-compose`:
+and then runs a local config with `docker-compose`:
 
 ```
 docker-compose up -d
@@ -91,7 +94,7 @@ Using local: supergraph.graphql
 🚀 Graph Router ready at http://localhost:4000/
 ```
 
-`make demo` then issues a curl request to the graph router
+`make demo` then issues a curl request to the graph router via:
 
 ```sh
 make query
@@ -594,7 +597,6 @@ make k8s-query
 which shows the following:
 
 ```
-.scripts/k8s-smoke.sh 80
 NAME                                     READY   STATUS    RESTARTS   AGE
 pod/inventory-65494cbf8f-bhtft           1/1     Running   0          59s
 pod/products-6d75ff449c-9sdnd            1/1     Running   0          59s
@@ -628,11 +630,6 @@ Smoke test
 {"data":{"allProducts":[{"id":"apollo-federation","sku":"federation","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}},{"id":"apollo-studio","sku":"studio","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}}]}}
 Success!
 -------------------------------------------------------------------------------------------
-.scripts/k8s-down.sh
-deployment.apps "router-deployment" deleted
-service "router-service" deleted
-ingress.networking.k8s.io "router-ingress" deleted
-Deleting cluster "kind" ...
 ```
 
 `make demo-k8s` then cleans up:
