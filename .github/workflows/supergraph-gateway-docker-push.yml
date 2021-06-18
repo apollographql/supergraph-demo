@@ -1,4 +1,4 @@
-name: Supergraph Gateway Docker Push
+name: Docker Build Push K8s
 
 on:
   push:
@@ -13,8 +13,19 @@ on:
       - ".scripts/*"
 
 jobs:
-  gateway-docker:
+  docker-build-push:
     runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        include:
+          - docker_context: "./router"
+            docker_tag: "supergraph-router"
+          - docker_context: "./subgraphs/products"
+            docker_tag: "subgraph-products"
+          - docker_context: "./subgraphs/users"
+            docker_tag: "subgraph-users"
+          - docker_context: "./subgraphs/inventory"
+            docker_tag: "subgraph-inventory"
     steps:
       -
         name: Checkout
@@ -36,17 +47,16 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
-          context: .
-          file: ./Dockerfile
+          context: ${{ matrix.docker_context }}
           push: true
-          tags: prasek/supergraph-demo:latest
+          tags: prasek/${{ matrix.docker_tag }}:latest
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
 
   k8s:
     runs-on: ubuntu-18.04
-    needs: gateway-docker
+    needs: docker-build-push
     steps:
       -
         name: Checkout

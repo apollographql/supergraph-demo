@@ -1,0 +1,17 @@
+{
+  "name": "subgraph-inventory",
+  "version": "1.0.0",
+  "description": "",
+  "main": "inventory.js",
+  "scripts": {
+    "start": "node inventory.js"
+  },
+  "dependencies": {
+    "@apollo/federation": "^0.25.1",
+    "apollo-server": "^2.25.1",
+    "graphql": "^15.5.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

@@ -7,8 +7,8 @@ echo Smoke test
 sleep 2
 
 echo -------------------------------------------------------------------------------------------
-ACT=$(set -x; curl -X POST -H 'Content-Type: application/json' --data '{ "query": "{ bestSellers { title } } " }' http://localhost:$PORT/)
-EXP='{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}'
+ACT=$(set -x; curl -X POST -H 'Content-Type: application/json' --data '{ "query": "{ allProducts { id, sku, createdBy { email, totalProductsCreated } } }" }' http://localhost:$PORT/)
+EXP='{"data":{"allProducts":[{"id":"apollo-federation","sku":"federation","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}},{"id":"apollo-studio","sku":"studio","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}}]}}'
 echo $ACT
 if [ "$ACT" = "$EXP" ]; then
     echo "Success!"

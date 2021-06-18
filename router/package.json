@@ -1,10 +1,10 @@
 {
-  "name": "supergraph-gateway",
+  "name": "router",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "router.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node router.js"
   },
   "dependencies": {
     "@apollo/gateway": "0.29.1",

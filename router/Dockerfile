@@ -1,4 +1,4 @@
-from node:14
+from node:14-alpine
 
 WORKDIR /usr/src/app
 
@@ -6,7 +6,7 @@ COPY package.json .
 
 RUN npm install
 
-COPY index.js .
+COPY router.js .
 COPY supergraph.graphql .
 
-CMD [ "node", "index.js" ]
+CMD [ "node", "router.js" ]

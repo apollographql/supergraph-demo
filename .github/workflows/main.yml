@@ -8,42 +8,6 @@ on:
     - cron: '30 7,19 * * *'
 
 jobs:
-  test-local:
-    runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        include:
-          - node-version: 12.x
-            rover-version: "v0.1.5"
-            gateway-port: 4001
-          - node-version: 14.x
-            rover-version: "latest"
-            gateway-port: 4002
-    env:
-      GATEWAY_PORT: ${{ matrix.gateway-port }}
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: use node ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: install rover
-        env:
-          ROVER_VERSION: ${{ matrix.rover-version }}
-        run: |
-          curl -sSL https://rover.apollo.dev/nix/$ROVER_VERSION | sh
-          echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
-      - name: rover subgraph introspect
-        run: make introspect
-      - name: supergraph config
-        run: make config
-      - name: rover supergraph compose
-        run: make compose
-      - name: npm install
-        run: make install
-      - name: smoke test
-        run: .scripts/ci-local.sh
   test-docker:
     runs-on: ubuntu-18.04
     steps:

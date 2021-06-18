@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         rover-version: ["latest"]
-        subgraph: ["orders", "products", "reviews", "customers", "inventory", "locations"]
+        subgraph: ["products", "users", "inventory"]
     env:
       APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
       GRAPH_REF: supergraph-preview@current
@@ -27,7 +27,7 @@ jobs:
           echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
       - name: check
         if: env.APOLLO_KEY != 0
-        run: rover subgraph check $GRAPH_REF --schema subgraphs/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
+        run: rover subgraph check $GRAPH_REF --schema subgraphs/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
       - name: skip check
         if: env.APOLLO_KEY == 0
         run: echo skipping subgraph check due to public repo fork PR not having secrets access.
