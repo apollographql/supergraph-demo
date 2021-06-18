@@ -13,8 +13,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: install rover
+        run: |
+          curl -sSL https://rover.apollo.dev/nix/latest | sh
+          echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
       - name: Start stack
-        run: docker-compose up -d
+        run: |
+          make supergraph
+          docker-compose up -d
+          sleep 3
+          docker-compose logs
       - name: smoke test
         run: .scripts/smoke.sh 4000
       - name: Stop stack

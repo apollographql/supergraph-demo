@@ -28,16 +28,6 @@ enum join__Graph {
   USERS @join__graph(name: "users" url: "https://users:4000/graphql")
 }
 
-"""
- BASIC SUPPORT
-  - @key
-  - Multiple @key defined on Entity
-  - Composite @key
-  - Basic @provides and @requires usage
-ADVANCED SUPPORT
-  - Nested @key
-  - Nested @requires (@provides poentially on roadmap)
-"""
 type Product
   @join__owner(graph: PRODUCTS)
   @join__type(graph: PRODUCTS, key: "id")

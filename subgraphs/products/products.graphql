@@ -1,13 +1,3 @@
-"""
- BASIC SUPPORT
-  - @key
-  - Multiple @key defined on Entity
-  - Composite @key
-  - Basic @provides and @requires usage
-ADVANCED SUPPORT
-  - Nested @key
-  - Nested @requires (@provides poentially on roadmap)
-"""
 type Product @key(fields: "id") @key(fields: "sku package") @key(fields: "sku variation { id }"){
   id: ID!
   sku: String

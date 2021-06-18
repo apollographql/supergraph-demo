@@ -11,5 +11,5 @@ fi
 echo "subgraphs:"
 for subgraph in ${subgraphs[@]}; do
   url="url_$subgraph"
-  (set -x; rover subgraph publish ${graph} --routing-url "${!url}" --schema subgraphs/${subgraph}/${subgraph}.graphql --name ${subgraph})
+  (set -x; rover subgraph publish ${graph} --routing-url "${!url}" --schema subgraphs/${subgraph}/${subgraph}.graphql --name ${subgraph} --convert)
 done

@@ -19,12 +19,14 @@ kubectl wait --namespace ingress-nginx \
   --selector=app.kubernetes.io/component=controller \
   --timeout=120s
 
+.scripts/k8s-router-config.sh
+
 retry=60
 code=1
 last=""
 until [[ $retry -le 0 || $code -eq 0 ]]
 do
-  result=$(kubectl apply -f k8s/router.yaml 2>/dev/null)
+  result=$(kubectl apply -f ./k8s/router.yaml 2>/dev/null)
   code=$?
 
   if [[ "$result" != "$last" ]]
