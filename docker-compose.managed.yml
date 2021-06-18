@@ -1,12 +1,21 @@
 version: '3'
 services:
-  web:
-    container_name: graph-router
-    build: .
+  router:
+    container_name: router
+    build: ./router
     environment:
       - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
-      - GATEWAY_ENV=Prod
+      - APOLLO_GRAPH_REF=supergraph-preview@current
     env_file: # create with make graph-api-env
       - graph-api.env
     ports:
       - "4000:4000"
+  products:
+    container_name: products
+    build: ./subgraphs/products
+  inventory:
+    container_name: inventory
+    build: ./subgraphs/inventory
+  users:
+    container_name: users
+    build: ./subgraphs/users

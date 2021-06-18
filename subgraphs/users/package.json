@@ -1,0 +1,17 @@
+{
+  "name": "subgraph-users",
+  "version": "1.0.0",
+  "description": "",
+  "main": "users.js",
+  "scripts": {
+    "start": "node users.js"
+  },
+  "dependencies": {
+    "@apollo/federation": "^0.25.1",
+    "apollo-server": "^2.25.1",
+    "graphql": "^15.5.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

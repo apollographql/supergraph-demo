@@ -10,6 +10,10 @@ kind create cluster --image kindest/node:v1.21.1 --config=k8s/cluster.yaml --wai
 
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.47.0/deploy/static/provider/kind/deploy.yaml
 
+kubectl apply -f k8s/subgraphs.yaml
+
+echo waiting for nginx controller to start ...
+
 kubectl wait --namespace ingress-nginx \
   --for=condition=ready pod \
   --selector=app.kubernetes.io/component=controller \

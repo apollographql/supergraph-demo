@@ -1,10 +1,18 @@
 version: '3'
 services:
-  web:
-    container_name: graph-router
-    build: .
+  router:
+    container_name: router
+    build: ./router
     environment:
-      - GATEWAY_SUPERGRAPH_SDL=supergraph.graphql
-      - GATEWAY_ENV=Prod
+      - APOLLO_SCHEMA_CONFIG_EMBEDDED=true
     ports:
       - "4000:4000"
+  products:
+    container_name: products
+    build: ./subgraphs/products
+  inventory:
+    container_name: inventory
+    build: ./subgraphs/inventory
+  users:
+    container_name: users
+    build: ./subgraphs/users

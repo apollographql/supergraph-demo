@@ -11,23 +11,14 @@ jobs:
     strategy:
       matrix:
         include:
-          - subgraph: "orders"
-            routing_url: "https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql"
-            rover-version: "latest"
           - subgraph: "products"
-            routing_url: "https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql"
+            routing_url: "http://products:4000/graphql"
             rover-version: "latest"
-          - subgraph: "reviews"
-            routing_url: "https://w0jtezo2pa.execute-api.us-east-1.amazonaws.com/Prod/graphql"
-            rover-version: "latest"
-          - subgraph: "customers"
-            routing_url: "https://eg3jdhe3zl.execute-api.us-east-1.amazonaws.com/Prod/graphql"
+          - subgraph: "users"
+            routing_url: "http://users:4000/graphql"
             rover-version: "latest"
           - subgraph: "inventory"
-            routing_url: "https://2lc1ekf3dd.execute-api.us-east-1.amazonaws.com/Prod/graphql"
-            rover-version: "latest"
-          - subgraph: "locations"
-            routing_url: "https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql"
+            routing_url: "http://inventory:4000/graphql"
             rover-version: "latest"
     env:
       APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
@@ -44,6 +35,6 @@ jobs:
           curl -sSL https://rover.apollo.dev/nix/$ROVER_VERSION | sh
           echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
       - name: check
-        run: rover subgraph check $GRAPH_REF --schema subgraphs/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
+        run: rover subgraph check $GRAPH_REF --schema subgraphs/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
       - name: publish
-        run: rover subgraph publish $GRAPH_REF --routing-url ${{ matrix.routing_url }} --schema subgraphs/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
+        run: rover subgraph publish $GRAPH_REF --routing-url ${{ matrix.routing_url }} --schema subgraphs/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}

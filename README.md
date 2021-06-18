@@ -68,55 +68,42 @@ You can federate multiple subgraphs into a supergraph using:
 make demo
 ```
 
-Which will do the the following:
-
 ```sh
-# pull subgraph schemas with federation enrichments
-make introspect
+# build a supergraph from 3 subgraphs: products, users, inventory
+make supergraph
 ```
 
-which gets the subgraph schemas from all subgraph servers:
-
-```
-rover subgraph introspect https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/orders.graphql
-
-rover subgraph introspect https://7bssbnldib.execute-api.us-east-1.amazonaws.com/Prod/graphql > subgraphs/products.graphql
-
-...
-```
-
-```sh
-# build a supergraph config file
-make config
-```
-
-which creates a supergraph.yaml config:
-
-```
-.scripts/config.sh > supergraph.yaml
-```
-
-```sh
-# locally compose a supergraph
-make compose
-```
-
-which composes a supergraph schema:
-
+which runs the local `rover supergraph compose` command:
 ```
 rover supergraph compose --config ./supergraph.yaml > supergraph.graphql
 ```
 
-and the graph-router container is started:
-
-```
-make docker-up
-```
-
-which shows:
+and then runs `docker-compose`:
 
 ```
 docker-compose up -d
+Creating router    ... done
+Creating inventory ... done
+Creating users     ... done
+Creating products  ... done
+Starting Apollo Gateway in local mode ...
+Using local: supergraph.graphql
+🚀 Graph Router ready at http://localhost:4000/
+-------------------------------------------------------------------------------------------
++ curl -X POST -H 'Content-Type: application/json' --data '{ "query": "{ allProducts { id, sku createdBy { email, totalProductsCreated } } }" }' http://localhost:4000/
+
+{"data":{"allProducts":[{"id":"apollo-federation","sku":"federation","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}},{"id":"apollo-studio","sku":"studio","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}}]}}
+-------------------------------------------------------------------------------------------
+docker-compose down
+Stopping router    ... done
+Stopping products  ... done
+Stopping inventory ... done
+Stopping users     ... done
+Removing router    ... done
+Removing products  ... done
+Removing inventory ... done
+Removing users     ... done
+Removing network supergraph-demo_default
 Creating network "supergraph-demo_default" with the default driver
 Creating graph-router ... done
 
@@ -131,33 +118,53 @@ Using local: supergraph.graphql
 make query
 ```
 
-which issues the following query:
+which issues the following query that fetches from 3 subgraphs:
 
 ```ts
 {
   query: {
-    bestSellers: { title }
+    allProducts: {
+      id,
+      sku,
+      createdBy {
+        email,
+        totalProductsCreated
+      }
+     }
   }
 }
 ```
 
-and returns this result:
+which returns the following results:
 
 ```ts
 {
   data: {
-    bestSellers:[
-      { title: "adidas Yeezy 700 V3 Kyanite" },
-      { title: "Jordan 5 Retro Change The World" }
+    allProducts: [
+      {
+        id: "apollo-federation",
+        sku: "federation",
+        createdBy: {
+          email: "support@apollographql.com",
+          totalProductsCreated: 1337
+        }
+      },{
+        id: "apollo-studio",
+        sku: "studio",
+        createdBy:{
+          email: "support@apollographql.com",
+          totalProductsCreated: 1337
+        }
+      }
     ]
   }
 }
 ```
 
-`make demo` then shuts down the graph-router:
+`make demo` then shuts down the graph router:
 
-```sh
-make docker-down
+```
+docker-compose down
 ```
 
 ## Composition in Apollo Studio
@@ -182,23 +189,26 @@ for use in `docker-compose.managed.yml`:
 
 ```yaml
 version: '3'
- services:
-   web:
-     container_name: graph-router
-     build: .
-     entrypoint: ["node", "index.js"]
-     environment:
-       - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
-     env_file: # create with make graph-api-env
-       - graph-api.env
-     ports:
-       - "4000:4000"
-```
-
-`graph-api.env`:
-
-```
-APOLLO_KEY=<redacted>
+services:
+  router:
+    container_name: router
+    build: ./router
+    environment:
+      - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
+      - APOLLO_GRAPH_REF=supergraph-preview@current
+    env_file: # create with make graph-api-env
+      - graph-api.env
+    ports:
+      - "4000:4000"
+  products:
+    container_name: products
+    build: ./subgraphs/products
+  inventory:
+    container_name: inventory
+    build: ./subgraphs/inventory
+  users:
+    container_name: users
+    build: ./subgraphs/users
 ```
 
 Then run the Managed Federation demo:
@@ -207,14 +217,7 @@ Then run the Managed Federation demo:
 make demo-managed
 ```
 
-Which does the following:
-
-```sh
-# pull subgraph schemas with federation enrichments
-make introspect
-```
-
-Publish your subgraphs to your new `Federated` graph in the Apollo Registry:
+Which publishes your subgraphs to your new `Federated` graph in the Apollo Registry:
 
 ```sh
 # publish subgraph schemas to a federated graph in the registry, for composition into a managed supergraph
@@ -224,21 +227,25 @@ make publish
 Interim composition errors may surface as each subgraph is published:
 
 ```
-rover subgraph publish supergraph-demo --routing-url https://nem23xx1vd.execute-api.us-east-1.amazonaws.com/Prod/graphql --schema subgraphs/orders.graphql --name orders
++ rover subgraph publish supergraph-preview@current --routing-url http://products:4000/graphql --schema subgraphs/products/products.graphql --name products
 
-Publishing SDL to supergraph-demo:current (subgraph: orders) using credentials from the default profile.
-error: We are unable to run composition for your graph because a subgraph contains an extend declaration for the type 'Product' which does not exist in any subgraph.
+Publishing SDL to supergraph-preview:current (subgraph: products) using credentials from the default profile.
+A new subgraph called 'products' for the 'supergraph-preview' graph was created.
+The gateway for the 'supergraph-preview' graph was NOT updated with a new schema
+
+WARN: The following composition errors occurred:
+Unknown type "User".
+[products] Query -> `Query` is an extension type, but `Query` is not defined in any service
 ```
 
 However once all subgraphs are published the supergraph will be updated, for example:
 
 ```
-rover subgraph publish supergraph-demo --routing-url https://1kmwbtxfr4.execute-api.us-east-1.amazonaws.com/Prod/graphql --schema subgraphs/locations.graphql --name locations
++ rover subgraph publish supergraph-preview@current --routing-url https://users:4000/graphql --schema subgraphs/users/users.graphql --name users
 
-Publishing SDL to supergraph-demo:current (subgraph: locations) using credentials from the default profile.
-A new subgraph called 'locations' for the 'supergraph-demo' graph was created
-
-The gateway for the 'supergraph-demo' graph was updated with a new schema, composed from the updated 'locations' subgraph
+Publishing SDL to supergraph-preview:current (subgraph: users) using credentials from the default profile.
+A new subgraph called 'users' for the 'supergraph-preview' graph was created
+The gateway for the 'supergraph-preview' graph was updated with a new schema, composed from the updated 'users' subgraph
 ```
 
 Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the subgraphs it's composed from:
@@ -268,28 +275,7 @@ Apollo usage reporting starting! See your graph at https://studio.apollographql.
 make query
 ```
 
-which issues the following query:
-
-```ts
-{
-  query: {
-    bestSellers: { title }
-  }
-}
-```
-
-and returns this result:
-
-```ts
-{
-  data: {
-    bestSellers:[
-      { title: "adidas Yeezy 700 V3 Kyanite" },
-      { title: "Jordan 5 Retro Change The World" }
-    ]
-  }
-}
-```
+which issues the same query as above.
 
 `make demo-managed` then shuts down the graph router:
 
@@ -565,48 +551,44 @@ using [k8s/router.yaml](k8s/router.yaml):
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: graph-router
+  name: router-deployment
   labels:
-    app: graphql
+    app: router
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
-      app: graphql
+      app: router
   template:
     metadata:
       labels:
-        app: graphql
+        app: router
     spec:
       containers:
-      - name: gateway
-        image: prasek/supergraph-demo:latest
+      - name: router
+        image: prasek/supergraph-router:latest
         env:
-        - name: GATEWAY_PORT
-          value: "3999"
-        - name: GATEWAY_ENV
-          value: "Prod"
-        - name: GATEWAY_SUPERGRAPH_SDL
-          value: "supergraph.graphql"
+        - name: APOLLO_SCHEMA_CONFIG_EMBEDDED
+          value: "true"
         ports:
-        - containerPort: 3999
+        - containerPort: 4000
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: graphql-service
+  name: router-service
 spec:
   selector:
-    app: graphql
+    app: router
   ports:
     - protocol: TCP
-      port: 4001
-      targetPort: 3999
+      port: 4000
+      targetPort: 4000
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: graphql-ingress
+  name: router-ingress
   annotations:
     kubernetes.io/ingress.class: nginx
 spec:
@@ -617,10 +599,11 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: graphql-service
+            name: router-service
             port:
-              number: 4001
 ```
+
+and 3 subgraph services [k8s/subgraphs.yaml](k8s/subgraphs.yaml):
 
 `make demo-k8s` then runs the following in a loop until the query succeeds or 2 min timeout:
 
@@ -629,63 +612,48 @@ kubectl get all
 make k8s-query
 ```
 
-Interim results while services are starting:
+which shows the following:
 
 ```
-NAME                                READY   STATUS              RESTARTS   AGE
-pod/graph-router-6c64bf96f4-k9bcj   0/1     ContainerCreating   0          4s
-pod/graph-router-6c64bf96f4-ks6l4   0/1     ContainerCreating   0          4s
-pod/graph-router-6c64bf96f4-wkgtq   0/1     ContainerCreating   0          4s
+.scripts/k8s-smoke.sh 80
+NAME                                     READY   STATUS    RESTARTS   AGE
+pod/inventory-65494cbf8f-bhtft           1/1     Running   0          59s
+pod/products-6d75ff449c-9sdnd            1/1     Running   0          59s
+pod/router-deployment-84cbc9f689-8fcnf   1/1     Running   0          20s
+pod/users-d85ccf5d9-cgn4k                1/1     Running   0          59s
 
-NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-service/graphql-service   ClusterIP   10.96.70.100   <none>        4001/TCP   4s
-service/kubernetes        ClusterIP   10.96.0.1      <none>        443/TCP    106s
+NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/inventory        ClusterIP   10.96.108.120   <none>        4000/TCP   59s
+service/kubernetes       ClusterIP   10.96.0.1       <none>        443/TCP    96s
+service/products         ClusterIP   10.96.65.206    <none>        4000/TCP   59s
+service/router-service   ClusterIP   10.96.178.206   <none>        4000/TCP   20s
+service/users            ClusterIP   10.96.98.53     <none>        4000/TCP   59s
 
-NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/graph-router   0/3     3            0           4s
+NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/inventory           1/1     1            1           59s
+deployment.apps/products            1/1     1            1           59s
+deployment.apps/router-deployment   1/1     1            1           20s
+deployment.apps/users               1/1     1            1           59s
 
-NAME                                      DESIRED   CURRENT   READY   AGE
-replicaset.apps/graph-router-6c64bf96f4   3         3         0       4s
+NAME                                           DESIRED   CURRENT   READY   AGE
+replicaset.apps/inventory-65494cbf8f           1         1         1       59s
+replicaset.apps/products-6d75ff449c            1         1         1       59s
+replicaset.apps/router-deployment-84cbc9f689   1         1         1       20s
+replicaset.apps/users-d85ccf5d9                1         1         1       59s
 Smoke test
 -------------------------------------------------------------------------------------------
-curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ bestSellers { title } } " }' http://localhost:80/
+++ curl -X POST -H 'Content-Type: application/json' --data '{ "query": "{ allProducts { id, sku, createdBy { email, totalProductsCreated } } }" }' http://localhost:80/
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-100    41    0     0  100    41      0   6833 --:--:-- --:--:-- --:--:--  6833
-curl: (52) Empty reply from server
-
-Error: query failed
- - got:
- - expecting:{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}
--------------------------------------------------------------------------------------------
-```
-
-Success after services are started:
-
-```
-NAME                                READY   STATUS    RESTARTS   AGE
-pod/graph-router-6c64bf96f4-k9bcj   1/1     Running   0          45s
-pod/graph-router-6c64bf96f4-ks6l4   1/1     Running   0          45s
-pod/graph-router-6c64bf96f4-wkgtq   1/1     Running   0          45s
-
-NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-service/graphql-service   ClusterIP   10.96.70.100   <none>        4001/TCP   45s
-service/kubernetes        ClusterIP   10.96.0.1      <none>        443/TCP    2m27s
-
-NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/graph-router   3/3     3            3           45s
-
-NAME                                      DESIRED   CURRENT   READY   AGE
-replicaset.apps/graph-router-6c64bf96f4   3         3         3       45s
-Smoke test
--------------------------------------------------------------------------------------------
-curl -X POST -H "Content-Type: application/json" --data '{ "query": "{ bestSellers { title } } " }' http://localhost:80/
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   116  100    75  100    41     36     20  0:00:02  0:00:02 --:--:--    56
-{"data":{"bestSellers":[{"title":"Hello World"},{"title":"Hello World"}]}}
+100   352  100   267  100    85   3000    955 --:--:-- --:--:-- --:--:--  3911
+{"data":{"allProducts":[{"id":"apollo-federation","sku":"federation","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}},{"id":"apollo-studio","sku":"studio","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}}]}}
 Success!
 -------------------------------------------------------------------------------------------
+.scripts/k8s-down.sh
+deployment.apps "router-deployment" deleted
+service "router-service" deleted
+ingress.networking.k8s.io "router-ingress" deleted
+Deleting cluster "kind" ...
 ```
 
 `make demo-k8s` then cleans up:

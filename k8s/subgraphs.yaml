@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products
+  labels:
+    app: subgraph-products
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subgraph-products
+  template:
+    metadata:
+      labels:
+        app: subgraph-products
+    spec:
+      containers:
+      - name: products
+        image: prasek/subgraph-products:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: products
+spec:
+  selector:
+    app: subgraph-products
+  ports:
+    - protocol: TCP
+      port: 4000
+      targetPort: 4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users
+  labels:
+    app: subgraph-users
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subgraph-users
+  template:
+    metadata:
+      labels:
+        app: subgraph-users
+    spec:
+      containers:
+      - name: users
+        image: prasek/subgraph-users:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users
+spec:
+  selector:
+    app: subgraph-users
+  ports:
+    - protocol: TCP
+      port: 4000
+      targetPort: 4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory
+  labels:
+    app: subgraph-inventory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subgraph-inventory
+  template:
+    metadata:
+      labels:
+        app: subgraph-inventory
+    spec:
+      containers:
+      - name: inventory
+        image: prasek/subgraph-inventory:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory
+spec:
+  selector:
+    app: subgraph-inventory
+  ports:
+    - protocol: TCP
+      port: 4000
+      targetPort: 4000
