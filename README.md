@@ -89,27 +89,6 @@ Creating products  ... done
 Starting Apollo Gateway in local mode ...
 Using local: supergraph.graphql
 🚀 Graph Router ready at http://localhost:4000/
--------------------------------------------------------------------------------------------
-+ curl -X POST -H 'Content-Type: application/json' --data '{ "query": "{ allProducts { id, sku createdBy { email, totalProductsCreated } } }" }' http://localhost:4000/
-
-{"data":{"allProducts":[{"id":"apollo-federation","sku":"federation","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}},{"id":"apollo-studio","sku":"studio","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}}]}}
--------------------------------------------------------------------------------------------
-docker-compose down
-Stopping router    ... done
-Stopping products  ... done
-Stopping inventory ... done
-Stopping users     ... done
-Removing router    ... done
-Removing products  ... done
-Removing inventory ... done
-Removing users     ... done
-Removing network supergraph-demo_default
-Creating network "supergraph-demo_default" with the default driver
-Creating graph-router ... done
-
-Starting Apollo Gateway in local mode ...
-Using local: supergraph.graphql
-🚀 Server ready at http://localhost:4000/
 ```
 
 `make demo` then issues a curl request to the graph router
