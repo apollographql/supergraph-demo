@@ -3,11 +3,11 @@ on:
   issue_comment:
     types: [created]
 jobs:
-  info:
-    name: Info
+  verify:
+    name: Verify
     runs-on: ubuntu-18.04
-    outputs:
-      ok: |
+    env:
+      OK: |
         ${{
           contains(github.event.comment.body, '/rebase') &&
           (github.event.issue.pull_request != '') &&
@@ -18,27 +18,15 @@ jobs:
             (github.event.issue.author_association == 'MEMBER')
           )
         }}
+    outputs:
+      ok: ${{ env.OK }}
     steps:
-      - uses: actions/checkout@v2
       - name: Info
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
-
-  comment:
-    name: Comment
-    runs-on: ubuntu-18.04
-    needs: info
-    outputs:
-      comment-id: ${{ steps.comment.outputs.comment-id }}
-    steps:
-      - name: with PAT
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.PAT }}
       - name: body
-        env:
-          OK: ${{ needs.info.outputs.ok }}
+        id: body
         run: |
           if [[ "$OK" == "true" ]]; then
             echo "::set-output name=msg::Rebasing ..."
@@ -57,8 +45,8 @@ jobs:
   rebase:
     name: Rebase
     runs-on: ubuntu-18.04
-    needs: info
-    if: needs.info.outputs.ok
+    needs: verify
+    if: needs.verify.outputs.ok
     steps:
       - name: with PAT
         uses: actions/checkout@v2
@@ -71,15 +59,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT }}
 
   ok-msg:
-    name: Success message
+    name: Success comment
     runs-on: ubuntu-18.04
-    needs: [info, comment, rebase]
-    if: success() && needs.info.outputs.ok
+    needs: [verify, rebase]
+    if: success() && needs.verify.outputs.ok
     steps:
-      - name: with PAT
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.PAT }}
       - name: Create or update comment
         id: comment
         uses: peter-evans/create-or-update-comment@v1
@@ -92,15 +76,11 @@ jobs:
           reactions: hooray
 
   fail-msg:
-    name: Failure message
+    name: Failure comment
     runs-on: ubuntu-18.04
-    needs: [info, comment, rebase]
-    if: failure() && needs.info.outputs.ok
+    needs: [verify, rebase]
+    if: failure() && needs.verify.outputs.ok
     steps:
-      - name: with PAT
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.PAT }}
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v1
         with:
