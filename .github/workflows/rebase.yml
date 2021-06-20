@@ -20,27 +20,18 @@ jobs:
         }}
     outputs:
       ok: ${{ env.OK }}
+      comment-id: ${{ steps.comment.outputs.comment-id }}
     steps:
       - name: Info
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
-      - name: body
-        id: body
-        run: |
-          if [[ "$OK" == "true" ]]; then
-            echo "::set-output name=msg::Rebasing ..."
-          else
-            echo "::set-output name=msg::Only members can rebase."
-          fi
       - name: Create or update comment
         id: comment
         uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
-          body: |
-            ${{ steps.body.outputs.msg }}
-          edit-mode: replace
+          body: Rebasing ...
 
   rebase:
     name: Rebase
@@ -69,7 +60,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
-          comment-id: ${{ needs.comment.outputs.comment-id }}
+          comment-id: ${{ needs.verify.outputs.comment-id }}
           body: |
             Rebase complete!
           edit-mode: replace
@@ -79,14 +70,14 @@ jobs:
     name: Failure comment
     runs-on: ubuntu-18.04
     needs: [verify, rebase]
-    if: failure() && needs.verify.outputs.ok
+    if: failure() || !needs.verify.outputs.ok
     steps:
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
-          comment-id: ${{ needs.comment.outputs.comment-id }}
+          comment-id: ${{ needs.verify.outputs.comment-id }}
           body: |
-            Error rebasing. Check the action logs for details.
+            Unable to rebase. Check the action logs for details.
           edit-mode: replace
           reactions: confused
