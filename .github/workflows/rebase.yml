@@ -6,36 +6,93 @@ jobs:
   info:
     name: Info
     runs-on: ubuntu-18.04
+    outputs:
+      ok: |
+        ${{
+          contains(github.event.comment.body, '/rebase') &&
+          (github.event.issue.pull_request != '') &&
+          (
+            (github.event.issue.author_association == 'OWNER') ||
+            (github.event.issue.author_association == 'COLLABORATOR') ||
+            (github.event.issue.author_association == 'CONTRIBUTOR') ||
+            (github.event.issue.author_association == 'MEMBER')
+          )
+        }}
     steps:
-      - name: info
+      - uses: actions/checkout@v2
+      - name: Info
         env:
-          PR: ${{ github.event.pull_request }}
-          MSG: ${{ github.event.comment.body }}
-          GRP: ${{ github.event.issue.author_association }}
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+  comment:
+    name: Comment
+    runs-on: ubuntu-18.04
+    needs: info
+    outputs:
+      comment-id: ${{ steps.comment.outputs.comment-id }}
+    steps:
+      - name: body
+        env:
+          OK: ${{ needs.info.outputs.ok }}
         run: |
-          echo "PR: $PR"
-          echo "MSG: $MSG"
-          echo "GRP: $GRP"
+          [[ "$OK" -eq 0 ]]; then
+            echo "::set-output name=msg::Only members can rebase."
+          else
+            echo "::set-output name=msg::Rebasing ..."
+          fi
+      - name: Create or update comment
+        id: comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ${{ steps.body.outputs.msg }}
+          edit-mode: replace
 
   rebase:
-    name: Rebase PR
-    if: |
-      contains(github.event.comment.body, '/rebase') &&
-      (github.event.issue.pull_request != '') &&
-      (
-        (github.event.issue.author_association == 'OWNER') ||
-        (github.event.issue.author_association == 'COLLABORATOR') ||
-        (github.event.issue.author_association == 'CONTRIBUTOR') ||
-        (github.event.issue.author_association == 'MEMBER')
-      )
+    name: Rebase
     runs-on: ubuntu-18.04
+    needs: info
+    if: needs.info.outputs.ok
     steps:
       - name: Checkout the latest code
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
       - name: Automatic Rebase
-        uses: cirrus-actions/rebase@1.4
+        uses: cirrus-actions/rebase@1.5
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+
+  ok-msg:
+    name: Success message
+    runs-on: ubuntu-18.04
+    needs: [info, comment, rebase]
+    if: success() && needs.info.outputs.ok
+    steps:
+    - name: Create or update comment
+      id: comment
+      uses: peter-evans/create-or-update-comment@v1
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-id: ${{ needs.rebase.outputs.comment-id }}
+        body: |
+          Rebase complete!
+        edit-mode: replace
+
+  fail-msg:
+    name: Failure message
+    runs-on: ubuntu-18.04
+    needs: [info, comment, rebase]
+    if: failure() && needs.info.outputs.ok
+    steps:
+    - name: Create or update comment
+      uses: peter-evans/create-or-update-comment@v1
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-id: ${{ needs.rebase.outputs.comment-id }}
+        body: |
+          Error rebasing.
+        edit-mode: replace
