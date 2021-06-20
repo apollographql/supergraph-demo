@@ -32,14 +32,18 @@ jobs:
     outputs:
       comment-id: ${{ steps.comment.outputs.comment-id }}
     steps:
+      - name: with PAT
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
       - name: body
         env:
           OK: ${{ needs.info.outputs.ok }}
         run: |
-          if [[ $OK -eq 0 ]]; then
-            echo "::set-output name=msg::Only members can rebase."
-          else
+          if [[ "$OK" == "true" ]]; then
             echo "::set-output name=msg::Rebasing ..."
+          else
+            echo "::set-output name=msg::Only members can rebase."
           fi
       - name: Create or update comment
         id: comment
@@ -56,7 +60,7 @@ jobs:
     needs: info
     if: needs.info.outputs.ok
     steps:
-      - name: Checkout the latest code
+      - name: with PAT
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.PAT }}
@@ -72,6 +76,10 @@ jobs:
     needs: [info, comment, rebase]
     if: success() && needs.info.outputs.ok
     steps:
+      - name: with PAT
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
     - name: Create or update comment
       id: comment
       uses: peter-evans/create-or-update-comment@v1
@@ -84,6 +92,11 @@ jobs:
         reactions: hooray
 
   fail-msg:
+    steps:
+      - name: with PAT
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
     name: Failure message
     runs-on: ubuntu-18.04
     needs: [info, comment, rebase]
