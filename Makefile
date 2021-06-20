@@ -105,25 +105,36 @@ dep-act:
 act:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/main.yml
 
-.PHONY: act-k8s
-act-k8s:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/release.yml -j k8s --secret-file docker.secrets
+.PHONY: act-rebase
+act-rebase:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/rebase.yml -s GITHUB_TOKEN --secret-file docker.secrets --detect-event
+
+.PHONY: act-release
+act-release:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml --secret-file docker.secrets
 
 .PHONY: act-subgraph-check
 act-subgraph-check:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/subgraph-check.yml --secret-file graph-api.env --detect-event
 
-.PHONY: act-docker-build
-act-docker-build:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml -j build -s GITHUB_TOKEN --secret-file docker.secrets
+.PHONY: docker-build
+docker-build: docker-build-router docker-build-products docker-build-inventory docker-build-users
 
-.PHONY: act-test
-act-test:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml --secret-file docker.secrets
+.PHONY: docker-build-router
+docker-build-router:
+	docker build -t prasek/supergraph-router:latest router/.
 
-.PHONY: act-rebase
-act-rebase:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/rebase.yml -s GITHUB_TOKEN --secret-file docker.secrets --detect-event
+.PHONY: docker-build-products
+docker-build-products:
+	docker build -t prasek/subgraph-products:latest subgraphs/products/.
+
+.PHONY: docker-build-inventory
+docker-build-inventory:
+	docker build -t prasek/subgraph-inventory:latest subgraphs/inventory/.
+
+.PHONY: docker-build-users
+docker-build-users:
+	docker build -t prasek/subgraph-users:latest subgraphs/users/.
 
 .PHONY: docker-prune
 docker-prune:

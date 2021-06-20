@@ -580,6 +580,9 @@ spec:
         name: supergraph-volume
 ---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: supergraph-c22698b7b9
 data:
   supergraph.graphql: |
     schema
@@ -636,9 +639,6 @@ data:
       name: String @join__field(graph: USERS)
       totalProductsCreated: Int @join__field(graph: USERS)
     }
-kind: ConfigMap
-metadata:
-  name: supergraph-c22698b7b9
 ---
 apiVersion: v1
 kind: Service

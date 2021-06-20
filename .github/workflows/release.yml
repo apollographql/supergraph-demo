@@ -33,7 +33,7 @@ jobs:
       count: ${{ steps.commits.outputs.count }}
     steps:
       - uses: actions/checkout@v2
-      - name: Dump GitHub context
+      - name: Info
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
