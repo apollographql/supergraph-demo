@@ -25,17 +25,55 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-matrix:
+  good-commits:
+    name: check commits
     runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.commits.outputs.count }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      -
+        name: check commits
+        id: commits
+        env:
+          COMMITS: ${{ toJson(github.event.commits) }}
+        run: |
+          echo COMMITS "$COMMITS"
+
+          if [[ "$COMMITS" != "null" ]]; then
+            MATCHING_COMMITS=$(jq -c ' . | map(select( .message | contains("CI: Bump artifact versions") | not )) ' <<< "$COMMITS" )
+            echo "$MATCHING_COMMITS" | jq
+            RESULT=$( echo "$MATCHING_COMMITS" | jq ' length ')
+            echo "RESULT: $RESULT"
+            echo "::set-output name=count::$RESULT"
+          else
+            echo "::set-output name=count::1"
+          fi
+
+  found-good-commits:
+    name: found good commits
+    runs-on: ubuntu-latest
+    needs: good-commits
+    if: needs.good-commits.outputs.count > 0
+    steps:
+      - name: Found good commits
+        run: |
+          echo Found good commits!
+
+  build-matrix:
+    name: create build matrix
+    runs-on: ubuntu-latest
+    needs: good-commits
+    if: needs.good-commits.outputs.count > 0
     outputs:
       packages: ${{ steps.matrix.outputs.packages }}
       matrix: ${{ steps.matrix.outputs.matrix }}
       count: ${{ steps.matrix.outputs.count }}
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
       - uses: actions/checkout@v2
       -
         name: generate matrix
@@ -61,6 +99,7 @@ jobs:
           MATRIX: ${{ steps.matrix.outputs.matrix }}
           COUNT: ${{ steps.matrix.outputs.count }}
           REBUILD_ALL: ${{ github.event.inputs && github.event.inputs.rebuildAll == 'yes' }}
+          COMMITS: ${{ steps.commits.outputs.count }}
         run: |
           echo "--------------------------------"
           echo "         ALL PACKAGES           "
@@ -78,13 +117,27 @@ jobs:
           fi
           echo "$MATRIX" | jq
 
+          echo "COMMIT COUNT: $COMMITS"
+
+  found-packages-to-build:
+    name: package changes detected
+    runs-on: ubuntu-latest
+    needs: build-matrix
+    if: needs.build-matrix.outputs.count > 0
+    steps:
+      - name: Found packages to build
+        run: |
+          echo Found ${{ needs.build-matrix.outputs.count }} packages to build!
+
   build:
     runs-on: ubuntu-latest
     needs: build-matrix
-    if: ${{ needs.build-matrix.outputs.count > 0 }}
+    if: |
+      needs.good-commits.outputs.count > 0 &&
+      needs.build-matrix.outputs.count > 0
     strategy:
       matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
-    name: ${{ matrix.name }}
+    name: build-${{ matrix.name }}
     steps:
       -
         name: Dump
@@ -126,9 +179,12 @@ jobs:
           echo "::set-output name=sha-${{ matrix.name }}::$( echo "$SHA" )"
 
   k8s:
+    name: k8s smoke test
     runs-on: ubuntu-18.04
     needs: [build-matrix, build]
-    if: always()
+    if: |
+      always() &&
+      needs.good-commits.outputs.count > 0
     steps:
       -
         name: Checkout
@@ -146,9 +202,12 @@ jobs:
         run: .scripts/ci-k8s.sh
 
   version-bump:
+    name: bump versions
     runs-on: ubuntu-latest
     needs: [build-matrix, build, k8s]
-    if: ${{ needs.build-matrix.outputs.count > 0 }}
+    if: |
+      needs.build-matrix.outputs.commits > 0 &&
+      needs.good-commits.outputs.count > 0
     steps:
       - uses: actions/checkout@v2
       -
@@ -211,8 +270,8 @@ jobs:
           token: ${{ secrets.PAT }}
           committer: Supergraph Demo Bot <prasek+bot@gmail.com>
           author: Supergraph Demo Bot <prasek+bot@gmail.com>
-          commit-message: Bump artifact versions
-          title:  Bump artifact versions
+          commit-message: 'CI: Bump artifact versions'
+          title:  'CI: Bump artifact versions'
           body: |
             ${{ env.PR_MSG }}
           branch: release

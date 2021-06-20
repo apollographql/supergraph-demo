@@ -85,6 +85,10 @@ k8s-smoke:
 k8s-nginx-dump:
 	.scripts/k8s-nginx-dump.sh "k8s-nginx-dump"
 
+.PHONY: k8s-graph-dump
+k8s-graph-dump:
+	.scripts/k8s-graph-dump.sh "k8s-graph-dump"
+
 .PHONY: k8s-down
 k8s-down:
 	.scripts/k8s-down.sh
@@ -123,7 +127,7 @@ act-docker-build:
 
 .PHONY: act-test
 act-test:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml -j build --secret-file docker.secrets
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml --secret-file docker.secrets
 
 .PHONY: act-rebase
 act-rebase:
