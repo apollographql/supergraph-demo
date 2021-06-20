@@ -20,4 +20,6 @@ done
 
 .scripts/k8s-nginx-dump.sh "smoke test failed"
 
+.scripts/k8s-graph-dump.sh "smoke test failed"
+
 exit $code
