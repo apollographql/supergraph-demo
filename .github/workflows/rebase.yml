@@ -1,4 +1,4 @@
-name: Rebase PR
+name: Rebase
 on:
   issue_comment:
     types: [created]

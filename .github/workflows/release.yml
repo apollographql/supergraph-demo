@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   good-commits:
-    name: check commits
+    name: Check commits
     runs-on: ubuntu-latest
     outputs:
       count: ${{ steps.commits.outputs.count }}
@@ -54,7 +54,7 @@ jobs:
           fi
 
   found-good-commits:
-    name: found good commits
+    name: Found good commits
     runs-on: ubuntu-latest
     needs: good-commits
     if: needs.good-commits.outputs.count > 0
@@ -67,7 +67,7 @@ jobs:
           echo "$COMMITS" | jq
 
   build-matrix:
-    name: create build matrix
+    name: Create build matrix
     runs-on: ubuntu-latest
     needs: good-commits
     if: needs.good-commits.outputs.count > 0
@@ -119,7 +119,7 @@ jobs:
           echo "$MATRIX" | jq
 
   found-packages-to-build:
-    name: package changes detected
+    name: Package changes detected
     runs-on: ubuntu-latest
     needs: build-matrix
     if: needs.build-matrix.outputs.count > 0
@@ -155,7 +155,7 @@ jobs:
       needs.build-matrix.outputs.count > 0
     strategy:
       matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
-    name: build-${{ matrix.name }}
+    name: Build-${{ matrix.name }}
     steps:
       -
         name: Dump
@@ -197,7 +197,7 @@ jobs:
           echo "::set-output name=sha-${{ matrix.name }}::$( echo "$SHA" )"
 
   k8s:
-    name: k8s smoke test
+    name: Smoke test - k8s
     runs-on: ubuntu-18.04
     needs: [build-matrix, build]
     if: |
@@ -220,7 +220,7 @@ jobs:
         run: .scripts/ci-k8s.sh
 
   version-bump:
-    name: bump versions
+    name: Bump versions
     runs-on: ubuntu-latest
     needs: [build-matrix, build, k8s]
     if: |

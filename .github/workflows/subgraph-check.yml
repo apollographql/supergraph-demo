@@ -1,4 +1,4 @@
-name: Subgraph Check
+name: Schema check
 on:
   pull_request:
     branches: [ main ]
@@ -25,7 +25,7 @@ jobs:
         run: |
           curl -sSL https://rover.apollo.dev/nix/$ROVER_VERSION | sh
           echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
-      - name: check
+      - name: run schema check
         if: env.APOLLO_KEY != 0
         run: rover subgraph check $GRAPH_REF --schema subgraphs/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
       - name: skip check
