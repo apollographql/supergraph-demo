@@ -95,7 +95,7 @@ ci-k8s:
 
 .PHONY: dep-act
 dep-act:
-	curl https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s v0.2.21
+	curl https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s v0.2.23
 
 .PHONY: act
 act:
@@ -103,7 +103,7 @@ act:
 
 .PHONY: act-k8s
 act-k8s:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/docker-build-push-k8s.yml -j k8s --secret-file docker.secrets
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/release.yml -j k8s --secret-file docker.secrets
 
 .PHONY: act-subgraph-check
 act-subgraph-check:
@@ -117,9 +117,13 @@ act-subgraph-publish:
 act-supergraph-build-webhook:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/supergraph-build-webhook.yml -s GITHUB_TOKEN --secret-file graph-api.env --detect-event
 
-.PHONY: act-docker-build-push
-act-docker-build-push:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/docker-build-push-k8s.yml -j docker-build-push --secret-file docker.secrets
+.PHONY: act-docker-build
+act-docker-build:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml -j build -s GITHUB_TOKEN --secret-file docker.secrets
+
+.PHONY: act-test
+act-test:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml -j build --secret-file docker.secrets
 
 .PHONY: act-rebase
 act-rebase:

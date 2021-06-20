@@ -1,0 +1,220 @@
+name: Publish artifacts
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - ".github/workflows/**"
+      - ".scripts/**"
+      - "router/**"
+      - "subgraphs/**"
+      - "k8s/**"
+      - "kustomization.yaml"
+      - "supergraph.graphql"
+      - "supergraph.yaml"
+  workflow_dispatch:
+    inputs:
+      rebuildAll:
+        description: 'Rebuild all packages (yes/no)'
+        required: false
+        default: 'yes'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.matrix.outputs.packages }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      count: ${{ steps.matrix.outputs.count }}
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - uses: actions/checkout@v2
+      -
+        name: generate matrix
+        id: matrix
+        env:
+          GITHUB_SHA: ${{ env.GITHUB_SHA}}
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          REBUILD_ALL: ${{ github.event.inputs && github.event.inputs.rebuildAll == 'yes' }}
+        run: |
+          PACKAGES=$(.scripts/build-matrix.sh)
+          if [[ "$REBUILD_ALL" == "true" ]]; then
+            MATRIX="$PACKAGES"
+          else
+            MATRIX=$(jq -c ' .include |= map(select(.changes=="1")) ' <<< "$PACKAGES")
+          fi
+          echo "::set-output name=packages::$( echo "$PACKAGES" )"
+          echo "::set-output name=matrix::$( echo "$MATRIX" )"
+          echo "::set-output name=count::$( echo "$MATRIX" | jq ' .include | length ' )"
+      -
+        name: dump
+        env:
+          PACKAGES: ${{ steps.matrix.outputs.packages }}
+          MATRIX: ${{ steps.matrix.outputs.matrix }}
+          COUNT: ${{ steps.matrix.outputs.count }}
+          REBUILD_ALL: ${{ github.event.inputs && github.event.inputs.rebuildAll == 'yes' }}
+        run: |
+          echo "--------------------------------"
+          echo "         ALL PACKAGES           "
+          echo "--------------------------------"
+          echo "$PACKAGES" | jq
+
+          echo "--------------------------------"
+          echo "       BUILD MATRIX             "
+          echo "--------------------------------"
+          if [[ "$REBUILD_ALL" == "true" ]]; then
+            echo "   *** FORCE REBUILD ***      "
+          fi
+          if [[ "$COUNT" -eq 0 ]]; then
+            echo "   *** EMPTY MATRIX ***      "
+          fi
+          echo "$MATRIX" | jq
+
+  build:
+    runs-on: ubuntu-latest
+    needs: build-matrix
+    if: ${{ needs.build-matrix.outputs.count > 0 }}
+    strategy:
+      matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
+    name: ${{ matrix.name }}
+    steps:
+      -
+        name: Dump
+        run: |
+          echo --------------------------------------------
+          echo name: ${{ matrix.name }}
+          echo dir: ${{ matrix.dir }}
+          echo versionOld: ${{ matrix.versionOld }}
+          echo versionNew: ${{ matrix.versionNew }}
+          echo changes: ${{ matrix.changes }}
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./${{ matrix.dir }}
+          push: true
+          tags: prasek/${{ matrix.name }}:${{ matrix.versionNew }}, prasek/${{ matrix.name }}:latest
+      -
+        name: Image digest
+        run: |
+          SHA=${{ steps.docker_build.outputs.digest }}
+          echo $SHA
+          echo "::set-output name=sha-${{ matrix.name }}::$( echo "$SHA" )"
+
+  k8s:
+    runs-on: ubuntu-18.04
+    needs: [build-matrix, build]
+    if: always()
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: update kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+          chmod +x ./kind
+          mkdir -p $HOME/.kind/bin
+          mv ./kind $HOME/.kind/bin/kind
+          echo "PATH=$HOME/.kind/bin:$PATH" >> ${GITHUB_ENV}
+      -
+        name: test-k8s
+        run: .scripts/ci-k8s.sh
+
+  version-bump:
+    runs-on: ubuntu-latest
+    needs: [build-matrix, build, k8s]
+    if: ${{ needs.build-matrix.outputs.count > 0 }}
+    steps:
+      - uses: actions/checkout@v2
+      -
+        name: dump
+        env:
+          PACKAGES: ${{ needs.build-matrix.outputs.packages }}
+          MATRIX: ${{ needs.build-matrix.outputs.matrix }}
+        run: |
+          echo --------------------------------
+          echo ALL PACKAGES
+          echo --------------------------------
+          echo "$PACKAGES" | jq
+
+          echo --------------------------------
+          echo BUILD MATRIX
+          echo --------------------------------
+          echo "$MATRIX" | jq
+      -
+        name: verify-clean
+        env:
+          MATRIX: ${{ needs.build-matrix.outputs.matrix }}
+        run: |
+          # verify no changes
+          git diff --exit-code
+      -
+        name: version bump
+        id: version-bump
+        env:
+          MATRIX: ${{ needs.build-matrix.outputs.matrix }}
+        run: |
+          echo "PR_MSG<<EOF" >> $GITHUB_ENV
+          echo "Bump artifact versions:" >> $GITHUB_ENV
+
+          # bump only changed versions
+          CHANGES=$(jq -c ' .include |= map(select(.changes=="1")) ' <<< "$MATRIX")
+          WORKDIR=$(pwd)
+
+          for k in $(jq -c ' .include | .[] | values ' <<< "$CHANGES" ); do
+            DIR=$(echo "$k" | jq -r '.dir')
+            NAME=$(echo "$k" | jq -r '.name')
+            OLD_VERSION=$(echo "$k" | jq -r '.versionOld')
+            NEW_VERSION=$(echo "$k" | jq -r '.versionNew')
+
+            echo "* Bump ${NAME} ${OLD_VERSION} -> ${NEW_VERSION} 🚀" >> $GITHUB_ENV
+
+            cd $DIR
+            npm version --git-tag-version=false v${NEW_VERSION}
+            cd $WORKDIR
+
+          done
+
+          echo "EOF" >> $GITHUB_ENV
+
+          echo "$(git diff)"
+      -
+        name: create pull request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.PAT }}
+          committer: Supergraph Demo Bot <prasek+bot@gmail.com>
+          author: Supergraph Demo Bot <prasek+bot@gmail.com>
+          commit-message: Bump artifact versions
+          title:  Bump artifact versions
+          body: |
+            ${{ env.PR_MSG }}
+          branch: release
+          base: main
+          delete-branch: true
