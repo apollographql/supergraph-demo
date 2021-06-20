@@ -45,7 +45,7 @@ jobs:
         id: comment
         uses: peter-evans/create-or-update-comment@v1
         with:
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ github.event.issue.number }}
           body: |
             ${{ steps.body.outputs.msg }}
           edit-mode: replace
@@ -76,11 +76,12 @@ jobs:
       id: comment
       uses: peter-evans/create-or-update-comment@v1
       with:
-        issue-number: ${{ github.event.pull_request.number }}
+        issue-number: ${{ github.event.issue.number }}
         comment-id: ${{ needs.comment.outputs.comment-id }}
         body: |
           Rebase complete!
         edit-mode: replace
+        reactions: hooray
 
   fail-msg:
     name: Failure message
@@ -91,8 +92,9 @@ jobs:
     - name: Create or update comment
       uses: peter-evans/create-or-update-comment@v1
       with:
-        issue-number: ${{ github.event.pull_request.number }}
+        issue-number: ${{ github.event.issue.number }}
         comment-id: ${{ needs.comment.outputs.comment-id }}
         body: |
           Error rebasing. Check the action logs for details.
         edit-mode: replace
+        reactions: confused
