@@ -36,7 +36,7 @@ jobs:
         env:
           OK: ${{ needs.info.outputs.ok }}
         run: |
-          [[ "$OK" -eq 0 ]]; then
+          if [[ $OK -eq 0 ]]; then
             echo "::set-output name=msg::Only members can rebase."
           else
             echo "::set-output name=msg::Rebasing ..."
@@ -77,7 +77,7 @@ jobs:
       uses: peter-evans/create-or-update-comment@v1
       with:
         issue-number: ${{ github.event.pull_request.number }}
-        comment-id: ${{ needs.rebase.outputs.comment-id }}
+        comment-id: ${{ needs.comment.outputs.comment-id }}
         body: |
           Rebase complete!
         edit-mode: replace
@@ -92,7 +92,7 @@ jobs:
       uses: peter-evans/create-or-update-comment@v1
       with:
         issue-number: ${{ github.event.pull_request.number }}
-        comment-id: ${{ needs.rebase.outputs.comment-id }}
+        comment-id: ${{ needs.comment.outputs.comment-id }}
         body: |
-          Error rebasing.
+          Error rebasing. Check the action logs for details.
         edit-mode: replace
