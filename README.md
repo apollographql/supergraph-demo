@@ -547,6 +547,38 @@ and then creates:
 using [k8s/router.yaml](k8s/router.yaml):
 
 ```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: router
+  name: router-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: router
+  template:
+    metadata:
+      labels:
+        app: router
+    spec:
+      containers:
+      - env:
+        - name: APOLLO_SCHEMA_CONFIG_EMBEDDED
+          value: "true"
+        image: prasek/supergraph-router:latest
+        name: router
+        ports:
+        - containerPort: 4000
+        volumeMounts:
+        - mountPath: /etc/config
+          name: supergraph-volume
+      volumes:
+      - configMap:
+          name: supergraph-c22698b7b9
+        name: supergraph-volume
+---
 apiVersion: v1
 data:
   supergraph.graphql: |
@@ -619,38 +651,6 @@ spec:
     targetPort: 4000
   selector:
     app: router
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: router
-  name: router-deployment
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: router
-  template:
-    metadata:
-      labels:
-        app: router
-    spec:
-      containers:
-      - env:
-        - name: APOLLO_SCHEMA_CONFIG_EMBEDDED
-          value: "true"
-        image: prasek/supergraph-router:latest
-        name: router
-        ports:
-        - containerPort: 4000
-        volumeMounts:
-        - mountPath: /etc/config
-          name: supergraph-volume
-      volumes:
-      - configMap:
-          name: supergraph-c22698b7b9
-        name: supergraph-volume
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

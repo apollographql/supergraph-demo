@@ -113,14 +113,6 @@ act-k8s:
 act-subgraph-check:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/subgraph-check.yml --secret-file graph-api.env --detect-event
 
-.PHONY: act-subgraph-publish
-act-subgraph-publish:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/subgraph-publish.yml --secret-file graph-api.env
-
-.PHONY: act-supergraph-build-webhook
-act-supergraph-build-webhook:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/supergraph-build-webhook.yml -s GITHUB_TOKEN --secret-file graph-api.env --detect-event
-
 .PHONY: act-docker-build
 act-docker-build:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml -j build -s GITHUB_TOKEN --secret-file docker.secrets

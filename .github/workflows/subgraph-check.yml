@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - "subgraphs/*"
+      - "subgraphs/**"
 
 jobs:
   subgraph-check:
