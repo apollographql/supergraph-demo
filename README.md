@@ -462,7 +462,7 @@ A new supergraph `ConfigMap` is generated using `kustomize` when changes are det
 An updated Gateway `Deployment` references new supergraph schema `ConfigMap` via:
 * `kubectl apply` in place - resulting in a [rolling upgrade](https://github.com/kubernetes-sigs/kustomize/blob/master/examples/configGeneration.md)
 * Progressive delivery controllers like [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) or [Flagger](https://flagger.app/)
-*Suitable for `BlueGreen` and `Canary` deployment strategies
+* Suitable for `BlueGreen` and `Canary` deployment strategies
 
 Gateway `Deployments` can be rolled back to an earlier supergraph schema by applying an earlier version of the Gateway `Deployment` that referenced an earlier supergraph `ConfigMap`.
 
@@ -521,9 +521,9 @@ The resulting Gateway configuration can be applied directly with `kubectl`, with
 
 ## Deploying to Kubernetes
 
-You'll need:
+You'll need the latest versions of:
 
-* [kubectl](https://kubernetes.io/docs/tasks/tools/)
+* [kubectl](https://kubernetes.io/docs/tasks/tools/) - with expanded `kustomize` support for `resources`
 * [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
 then run:
@@ -535,7 +535,7 @@ make demo-k8s
 which generates a graph router `Deployment` and supergraph `ConfigMap` using:
 
 ```
-kubectl kustomize ./ > ./k8s/router.yaml
+kubectl kustomize k8s/router/base
 ```
 
 and then creates:
@@ -678,7 +678,7 @@ spec:
 and 3 subgraph services [k8s/subgraphs/base/subgraphs.yaml](k8s/subgraphs/base/subgraphs.yaml) via:
 
 ```sh
-kubectl apply -k k8s/subgraphs/base
+kubectl kustomize k8s/subgraphs/base
 ```
 
 `make demo-k8s` then runs the following in a loop until the query succeeds or 2 min timeout:

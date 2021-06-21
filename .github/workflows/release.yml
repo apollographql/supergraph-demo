@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'demo'
     paths:
       - ".github/workflows/**"
       - ".scripts/**"
@@ -227,7 +228,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       -
-        name: dump
+        name: Info
         env:
           PACKAGES: ${{ needs.build-matrix.outputs.packages }}
           MATRIX: ${{ needs.build-matrix.outputs.matrix }}
@@ -248,35 +249,22 @@ jobs:
         run: |
           # verify no changes
           git diff --exit-code
+      - name: install kustomize
+        run: |
+          BIN_DIR="$HOME/.kustomize/bin"
+          mkdir -p $BIN_DIR
+          cd $BIN_DIR
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          echo "PATH=$PATH:$BIN_DIR" >> ${GITHUB_ENV}
       -
         name: version bump
         id: version-bump
         env:
+          PACKAGES: ${{ needs.build-matrix.outputs.packages }}
           MATRIX: ${{ needs.build-matrix.outputs.matrix }}
         run: |
-          echo "PR_MSG<<EOF" >> $GITHUB_ENV
-          echo "Bump artifact versions:" >> $GITHUB_ENV
-
-          # bump only changed versions
-          CHANGES=$(jq -c ' .include |= map(select(.changes=="1")) ' <<< "$MATRIX")
-          WORKDIR=$(pwd)
-
-          for k in $(jq -c ' .include | .[] | values ' <<< "$CHANGES" ); do
-            DIR=$(echo "$k" | jq -r '.dir')
-            NAME=$(echo "$k" | jq -r '.name')
-            OLD_VERSION=$(echo "$k" | jq -r '.versionOld')
-            NEW_VERSION=$(echo "$k" | jq -r '.versionNew')
-
-            echo "* Bump ${NAME} ${OLD_VERSION} -> ${NEW_VERSION} 🚀" >> $GITHUB_ENV
-
-            cd $DIR
-            npm version --git-tag-version=false v${NEW_VERSION}
-            cd $WORKDIR
-
-          done
-
-          echo "EOF" >> $GITHUB_ENV
-
+          .scripts/bump-versions.sh "$MATRIX" >> $GITHUB_ENV
+          .scripts/kustomize-edit-set-image.sh
           echo "$(git diff)"
       -
         name: create pull request
