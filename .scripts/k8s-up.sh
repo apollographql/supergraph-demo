@@ -47,4 +47,6 @@ done
 
 .scripts/k8s-nginx-dump.sh "timeout waiting for nginx admission controller to start"
 
+.scripts/k8s-graph-dump.sh "timeout waiting for nginx admission controller to start"
+
 exit $code
