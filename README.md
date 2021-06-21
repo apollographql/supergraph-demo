@@ -544,7 +544,11 @@ and then creates:
 * graph-router `Deployment` configured to use a supergraph `ConfigMap`
 * graph-router `Service` and `Ingress`
 
-using [k8s/router.yaml](k8s/router.yaml):
+using [k8s/router/base/router.yaml](k8s/router/base/router.yaml) via:
+
+```sh
+kubectl apply -k k8s/router/base
+```
 
 ```yaml
 apiVersion: apps/v1
@@ -671,7 +675,11 @@ spec:
         pathType: Prefix
 ```
 
-and 3 subgraph services [k8s/subgraphs.yaml](k8s/subgraphs.yaml):
+and 3 subgraph services [k8s/subgraphs/base/subgraphs.yaml](k8s/subgraphs/base/subgraphs.yaml) via:
+
+```sh
+kubectl apply -k k8s/subgraphs/base
+```
 
 `make demo-k8s` then runs the following in a loop until the query succeeds or 2 min timeout:
 
