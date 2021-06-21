@@ -4,14 +4,12 @@ on:
   push:
     branches:
       - 'main'
-      - 'demo'
     paths:
       - ".github/workflows/**"
       - ".scripts/**"
       - "router/**"
       - "subgraphs/**"
       - "k8s/**"
-      - "kustomization.yaml"
       - "supergraph.graphql"
       - "supergraph.yaml"
   workflow_dispatch:
