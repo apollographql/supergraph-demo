@@ -22,22 +22,23 @@ jobs:
       ok: ${{ env.OK }}
       comment-id: ${{ steps.comment.outputs.comment-id }}
     steps:
-      - name: Info
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
       - name: Create or update comment
         id: comment
+        if: env.OK == 'true'
         uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
           body: Rebasing ...
+      - name: Info
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
 
   rebase:
     name: Rebase
     runs-on: ubuntu-18.04
     needs: verify
-    if: needs.verify.outputs.ok
+    if: needs.verify.outputs.ok == 'true'
     steps:
       - name: with PAT
         uses: actions/checkout@v2
@@ -53,7 +54,7 @@ jobs:
     name: Success comment
     runs-on: ubuntu-18.04
     needs: [verify, rebase]
-    if: success() && needs.verify.outputs.ok
+    if: success() && needs.verify.outputs.ok == 'true'
     steps:
       - name: Create or update comment
         id: comment
@@ -70,7 +71,7 @@ jobs:
     name: Failure comment
     runs-on: ubuntu-18.04
     needs: [verify, rebase]
-    if: failure() || !needs.verify.outputs.ok
+    if: failure() && needs.verify.outputs.ok == 'true'
     steps:
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v1
