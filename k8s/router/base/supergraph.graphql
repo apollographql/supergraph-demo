@@ -1,0 +1,69 @@
+schema
+  @core(feature: "https://specs.apollo.dev/core/v0.1"),
+  @core(feature: "https://specs.apollo.dev/join/v0.1")
+{
+  query: Query
+}
+
+directive @core(feature: String!) repeatable on SCHEMA
+
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet) repeatable on OBJECT | INTERFACE
+
+directive @join__owner(graph: join__Graph!) on OBJECT | INTERFACE
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+type DeliveryEstimates {
+  estimatedDelivery: String
+  fastestDelivery: String
+}
+
+scalar join__FieldSet
+
+enum join__Graph {
+  INVENTORY @join__graph(name: "inventory" url: "http://inventory:4000/graphql")
+  PRODUCTS @join__graph(name: "products" url: "http://products:4000/graphql")
+  USERS @join__graph(name: "users" url: "https://users:4000/graphql")
+}
+
+type Product
+  @join__owner(graph: PRODUCTS)
+  @join__type(graph: PRODUCTS, key: "id")
+  @join__type(graph: PRODUCTS, key: "sku package")
+  @join__type(graph: PRODUCTS, key: "sku variation{id}")
+  @join__type(graph: INVENTORY, key: "id")
+{
+  id: ID! @join__field(graph: PRODUCTS)
+  sku: String @join__field(graph: PRODUCTS)
+  package: String @join__field(graph: PRODUCTS)
+  variation: ProductVariation @join__field(graph: PRODUCTS)
+  dimensions: ProductDimension @join__field(graph: PRODUCTS)
+  createdBy: User @join__field(graph: PRODUCTS, provides: "totalProductsCreated")
+  delivery(zip: String): DeliveryEstimates @join__field(graph: INVENTORY, requires: "dimensions{size weight}")
+}
+
+type ProductDimension {
+  size: String
+  weight: Float
+}
+
+type ProductVariation {
+  id: ID!
+}
+
+type Query {
+  allProducts: [Product] @join__field(graph: PRODUCTS)
+  product(id: ID!): Product @join__field(graph: PRODUCTS)
+}
+
+type User
+  @join__owner(graph: USERS)
+  @join__type(graph: USERS, key: "email")
+  @join__type(graph: PRODUCTS, key: "email")
+{
+  email: ID! @join__field(graph: USERS)
+  name: String @join__field(graph: USERS)
+  totalProductsCreated: Int @join__field(graph: USERS)
+}
