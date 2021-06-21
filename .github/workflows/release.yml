@@ -147,7 +147,7 @@ jobs:
           fi
           echo "$MATRIX" | jq
 
-  build:
+  build-push:
     runs-on: ubuntu-latest
     needs: build-matrix
     if: |
@@ -155,10 +155,10 @@ jobs:
       needs.build-matrix.outputs.count > 0
     strategy:
       matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
-    name: Build-${{ matrix.name }}
+    name: Build-push ${{ matrix.name }}
     steps:
       -
-        name: Dump
+        name: Info
         run: |
           echo --------------------------------------------
           echo name: ${{ matrix.name }}
@@ -199,7 +199,7 @@ jobs:
   k8s:
     name: Smoke test - k8s
     runs-on: ubuntu-18.04
-    needs: [build-matrix, build]
+    needs: [build-matrix, build-push]
     if: |
       always() &&
       needs.good-commits.outputs.count > 0
@@ -222,7 +222,7 @@ jobs:
   version-bump:
     name: Bump versions
     runs-on: ubuntu-latest
-    needs: [build-matrix, build, k8s]
+    needs: [build-matrix, build-push, k8s]
     if: |
       needs.good-commits.outputs.count > 0 &&
       needs.build-matrix.outputs.count > 0

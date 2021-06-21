@@ -10,8 +10,8 @@ GITHUB_SHA="${GITHUB_SHA:-HEAD}"
 >&2 echo "found GITHUB_EVENT_BEFORE: $GITHUB_EVENT_BEFORE"
 >&2 echo "found GITHUB_SHA: $GITHUB_SHA"
 
-#see https://github.community/t/check-pushed-file-changes-with-git-diff-tree-in-github-actions/17220/10
-DIFF=$( git diff --name-only $GITHUB_EVENT_BEFORE $GITHUB_SHA )
+# for dynamic build matrix in GitHub actions, see:
+# https://github.community/t/check-pushed-file-changes-with-git-diff-tree-in-github-actions/17220/10
 
 WORKDIR=$(pwd)
 TMPFILE=$(mktemp)
@@ -24,17 +24,18 @@ EOF
 PACKAGES=$(find . -name 'package.json')
 for i in $PACKAGES; do
   DIR=$(dirname $i | sed 's|^./||')
-    NAME=$(grep '"name":' $DIR/package.json | cut -d\" -f4)
-    OLD_VERSION=$(grep '"version":' $DIR/package.json | cut -d\" -f4)
-    if echo "$DIFF" | grep -E "$DIR" 2>&1> /dev/null; then
-      (cd $DIR; cp package.json package.json.bak)
-      NEW_VERSION=$(cd $DIR; npm version --git-tag-version=false patch | sed 's|^v||')
-      (cd $DIR; rm package.json; mv package.json.bak package.json)
-      CHANGES=1
-    else
-      NEW_VERSION=$OLD_VERSION
-      CHANGES=0
-    fi
+  NAME=$(grep '"name":' $DIR/package.json | cut -d\" -f4)
+  OLD_VERSION=$(grep '"version":' $DIR/package.json | cut -d\" -f4)
+  DIFF=$( git diff --name-only $GITHUB_EVENT_BEFORE $GITHUB_SHA "$DIR")
+  if [[ -n "$DIFF" ]];  then
+    (cd $DIR; cp package.json package.json.bak)
+    NEW_VERSION=$(cd $DIR; npm version --git-tag-version=false patch | sed 's|^v||')
+    (cd $DIR; rm package.json; mv package.json.bak package.json)
+    CHANGES=1
+  else
+    NEW_VERSION=$OLD_VERSION
+    CHANGES=0
+  fi
 
 cat >>$TMPFILE <<EOF
   {
