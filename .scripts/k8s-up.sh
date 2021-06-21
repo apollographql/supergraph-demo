@@ -8,6 +8,7 @@ then
 fi
 kind create cluster --image kindest/node:v1.21.1 --config=k8s/clusters/kind-cluster.yaml --wait 5m
 
+# important: use a newer kubectl version that supports extended kustomize resources
 kubectl apply -k k8s/infra/base
 
 kubectl apply -k k8s/subgraphs/base
