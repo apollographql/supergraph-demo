@@ -18,6 +18,7 @@ Contents:
   * [CD: Update Gateway In Place](#cd-update-gateway-in-place)
   * [CD: GitOps via Extended CI](#cd-gitops-via-extended-ci)
 * [Deploying to Kubernetes](#deploying-to-kubernetes)
+* [GitOps Config Repo](#gitops-config-repo)
 * [Learn More](#learn-more)
 
 ## Welcome
@@ -734,6 +735,10 @@ service "graphql-service" deleted
 ingress.networking.k8s.io "graphql-ingress" deleted
 Deleting cluster "kind" ...
 ```
+
+## GitOps Config Repo
+
+This `source repo` propagates new docker image versions to the [apollographql/supergraph-demo-gitops](https://github.com/apollographql/supergraph-demo-gitops) repo, with `kustomize` configs to deploy to Kubernetes for `dev`, `stage`, and `prod`.
 
 ## Learn More
 
