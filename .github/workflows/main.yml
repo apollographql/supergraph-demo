@@ -8,14 +8,45 @@ on:
 jobs:
   test-docker:
     name: CI
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: install rover
+      -
+        name: install rover
         run: |
+          echo ---------------------------------------------------------------
+          echo rover - installing ...
+          echo ---------------------------------------------------------------
           curl -sSL https://rover.apollo.dev/nix/latest | sh
-          echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
+          echo "$HOME/.rover/bin" >> ${GITHUB_PATH}
+      -
+        name: update docker-compose
+        run: |
+          which docker-compose && exit 0 || true
+          echo ---------------------------------------------------------------
+          echo docker-compose - installing ...
+          echo ---------------------------------------------------------------
+          BIN_DIR=$HOME/.docker-compose/bin
+          FILE=$BIN_DIR/docker-compose
+          mkdir -p $BIN_DIR
+          set -x
+          curl -L --fail https://github.com/docker/compose/releases/download/1.29.1/docker-compose-`uname -s`-`uname -m` -o $FILE
+          chmod +x $FILE
+          echo "downloaded $($FILE --version)"
+          echo "$BIN_DIR" >> ${GITHUB_PATH}
+          set +x
+          echo ---------------------------------------------------------------
+      -
+        name: check tools
+        run: |
+          echo ---------------------------------------------------------------
+          ( set -x; which rover )
+          echo "$(rover --version)"
+          echo ---------------------------------------------------------------
+          ( set -x; which docker-compose )
+          echo "$(docker-compose --version)"
+          echo ---------------------------------------------------------------
       - name: make supergraph
         run: |
           make supergraph

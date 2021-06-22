@@ -12,7 +12,7 @@ on:
 jobs:
   config-pr:
     name: Create Config PR
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       -
         name: checkout supergraph-demo

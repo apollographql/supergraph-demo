@@ -1,6 +1,9 @@
 .PHONY: default
 default: demo
 
+.PHONY: ci
+ci: supergraph docker-up smoke docker-down
+
 .PHONY: demo
 demo: supergraph docker-up query docker-down
 
@@ -107,25 +110,27 @@ k8s-ci-dev:
 dep-act:
 	curl https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s v0.2.23
 
+ubuntu-latest=ubuntu-latest=catthehacker/ubuntu:act-latest
+
 .PHONY: act
 act:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/main.yml
+	act -P $(ubuntu-latest) -W .github/workflows/main.yml --detect-event
 
 .PHONY: act-rebase
 act-rebase:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/rebase.yml -s GITHUB_TOKEN --secret-file docker.secrets --detect-event
+	act -P $(ubuntu-latest) -W .github/workflows/rebase.yml -s GITHUB_TOKEN --secret-file docker.secrets --detect-event
 
 .PHONY: act-release
 act-release:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml --secret-file docker.secrets
+	act -P $(ubuntu-latest) -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml --secret-file docker.secrets
 
 .PHONY: act-subgraph-check
 act-subgraph-check:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/subgraph-check.yml --secret-file graph-api.env --detect-event
+	act -P $(ubuntu-latest) -W .github/workflows/subgraph-check.yml --secret-file graph-api.env --detect-event
 
 .PHONY: act-config-pr
 act-config-pr:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/config-pr.yml --secret-file docker.secrets --detect-event -s PAT
+	act -P $(ubuntu-latest) -W .github/workflows/config-pr.yml --secret-file docker.secrets --detect-event -s PAT
 
 .PHONY: docker-build
 docker-build: docker-build-router docker-build-products docker-build-inventory docker-build-users
