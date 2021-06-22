@@ -341,7 +341,7 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
-          merge-method: squash
+          merge-method: rebase
       - name: Check output
         if: |
           steps.cpr.outputs.pull-request-operation == 'created' ||
