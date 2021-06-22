@@ -145,12 +145,35 @@ jobs:
           fi
           echo "$MATRIX" | jq
 
+  docker-ci:
+    name: Docker CI
+    needs: [build-matrix]
+    if: needs.build-matrix.outputs.count > 0
+    runs-on: ubuntu-18.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: install rover
+        run: |
+          curl -sSL https://rover.apollo.dev/nix/latest | sh
+          echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
+      - name: make supergraph
+        run: |
+          make supergraph
+      - name: docker-compose up -d
+        run: |
+          docker-compose up -d
+          sleep 3
+          docker-compose logs
+      - name: smoke test
+        run: .scripts/smoke.sh 4000
+      - name: docker-compose down
+        run: docker-compose down
+
   build-push:
     runs-on: ubuntu-latest
-    needs: build-matrix
-    if: |
-      needs.good-commits.outputs.count > 0 &&
-      needs.build-matrix.outputs.count > 0
+    needs: [docker-ci, build-matrix]
+    if: needs.build-matrix.outputs.count > 0
     strategy:
       matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
     name: Build-push ${{ matrix.name }}
@@ -200,7 +223,7 @@ jobs:
     needs: [build-matrix, build-push]
     if: |
       always() &&
-      needs.good-commits.outputs.count > 0
+      needs.build-matrix.outputs.count > 0
     steps:
       -
         name: Checkout
@@ -221,9 +244,7 @@ jobs:
     name: Bump versions
     runs-on: ubuntu-latest
     needs: [build-matrix, build-push, k8s]
-    if: |
-      needs.good-commits.outputs.count > 0 &&
-      needs.build-matrix.outputs.count > 0
+    if: needs.build-matrix.outputs.count > 0
     steps:
       - uses: actions/checkout@v2
       -
