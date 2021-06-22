@@ -10,5 +10,5 @@ fi
 
 echo "subgraphs:"
 for subgraph in ${subgraphs[@]}; do
-  (set -x; rover subgraph delete ${graph} --name ${subgraph})
+  (set -x; ${ROVER_BIN:-'rover'} subgraph delete ${graph} --name ${subgraph})
 done
