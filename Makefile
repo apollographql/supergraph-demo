@@ -123,6 +123,10 @@ act-release:
 act-subgraph-check:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/subgraph-check.yml --secret-file graph-api.env --detect-event
 
+.PHONY: act-config-pr
+act-config-pr:
+	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/config-pr.yml --secret-file docker.secrets --detect-event -s PAT
+
 .PHONY: docker-build
 docker-build: docker-build-router docker-build-products docker-build-inventory docker-build-users
 

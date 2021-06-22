@@ -1,0 +1,73 @@
+name: Config PR
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - "k8s/router/dev/kustomization.yaml"
+      - "k8s/subgraphs/dev/kustomization.yaml"
+  workflow_dispatch: {}
+
+jobs:
+  config-pr:
+    name: Create Config PR
+    runs-on: ubuntu-18.04
+    steps:
+      -
+        name: checkout supergraph-demo
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+          path: supergraph-demo
+      -
+        name: checkout supergraph-demo-gitops
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+          repository: apollographql/supergraph-demo-gitops
+          path: supergraph-demo-gitops
+      -
+        name: copy k8s config
+        run: |
+          cp -r ./supergraph-demo/k8s/router/dev/kustomization.yaml ./supergraph-demo-gitops/router/dev
+          cp -r ./supergraph-demo/k8s/subgraphs/dev/kustomization.yaml ./supergraph-demo-gitops/subgraphs/dev
+      -
+        name: create pull request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.PAT }}
+          path: supergraph-demo-gitops
+          committer: Supergraph Demo Bot <prasek+bot@gmail.com>
+          author: Supergraph Demo Bot <prasek+bot@gmail.com>
+          commit-message: Bump artifact versions
+          title:  Bump artifact versions
+          body: Bump artifact versions
+          branch: artifact-bump
+          base: main
+          delete-branch: true
+      -
+       name: enable pull request automerge
+       if: |
+         steps.cpr.outputs.pull-request-operation == 'created' ||
+         steps.cpr.outputs.pull-request-operation == 'modified'
+       uses: peter-evans/enable-pull-request-automerge@v1
+       with:
+         token: ${{ secrets.PAT }}
+         pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+         merge-method: squash
+      - name: Check output
+        if: |
+          steps.cpr.outputs.pull-request-operation == 'created' ||
+          steps.cpr.outputs.pull-request-operation == 'modified'
+        run: |
+          echo PR CREATED or MODIFIED
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+      - name: No changes detected
+        if: |
+          steps.cpr.outputs.pull-request-operation != 'created' &&
+          steps.cpr.outputs.pull-request-operation != 'modified'
+        run: |
+          echo "No changes detected."
