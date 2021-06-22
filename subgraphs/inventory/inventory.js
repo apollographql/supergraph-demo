@@ -1,3 +1,4 @@
+//test artifact version bump
 const { readFileSync } = require('fs');
 const { resolve } = require('path');
 const { ApolloServer, gql, ApolloError } = require('apollo-server');
