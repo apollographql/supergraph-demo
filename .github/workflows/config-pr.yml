@@ -50,6 +50,7 @@ jobs:
       -
         name: enable pull request automerge
         if: |
+          false &&
           steps.cpr.outputs.pull-request-operation == 'created' ||
           steps.cpr.outputs.pull-request-operation == 'updated'
         uses: peter-evans/enable-pull-request-automerge@v1
