@@ -71,6 +71,10 @@ check-all:
 k8s-up:
 	.scripts/k8s-up.sh
 
+.PHONY: k8s-up-dev
+k8s-up-dev:
+	.scripts/k8s-up.sh dev
+
 .PHONY: k8s-query
 k8s-query:
 	.scripts/query.sh 80
@@ -91,9 +95,13 @@ k8s-graph-dump:
 k8s-down:
 	.scripts/k8s-down.sh
 
-.PHONY: ci-k8s
-ci-k8s:
-	@.scripts/ci-k8s.sh
+.PHONY: k8s-ci
+k8s-ci:
+	@.scripts/k8s-ci.sh
+
+.PHONY: k8s-ci-dev
+k8s-ci-dev:
+	@.scripts/k8s-ci.sh dev
 
 .PHONY: dep-act
 dep-act:
@@ -102,10 +110,6 @@ dep-act:
 .PHONY: act
 act:
 	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/main.yml
-
-.PHONY: act-test
-act-test:
-	act -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04 -W .github/workflows/test.yml
 
 .PHONY: act-rebase
 act-rebase:
@@ -141,3 +145,9 @@ docker-build-users:
 .PHONY: docker-prune
 docker-prune:
 	.scripts/docker-prune.sh
+
+.PHONY: promote-config
+promote-config:
+	cp -r ./k8s/* ../supergraph-demo-gitops ; \
+	cd ../supergraph-demo-gitops ; \
+	git diff | cat
