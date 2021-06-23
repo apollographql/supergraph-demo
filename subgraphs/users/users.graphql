@@ -3,8 +3,3 @@ type User @key(fields:"email") {
     name: String
     totalProductsCreated: Int
 }
-
-enum Color {
-  BLUE
-  GREEN
-}
