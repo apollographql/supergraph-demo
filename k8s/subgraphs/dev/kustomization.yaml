@@ -11,4 +11,4 @@ images:
   newTag: 1.1.1
 - name: prasek/subgraph-users:latest
   newName: prasek/subgraph-users
-  newTag: 1.1.1
+  newTag: 1.1.2
