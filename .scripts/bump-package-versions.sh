@@ -3,8 +3,8 @@
 # inputs from .scripts/build-matrix.sh
 MATRIX=$1
 
-echo "PR_MSG<<EOF"
-echo "Bump artifact versions:"
+echo "PACKAGE_BUMP_PR_MSG<<EOF"
+echo "Bump package versions:"
 
 for k in $(jq -c ' .include | .[] | values ' <<< "$MATRIX" ); do
   DIR=$(echo "$k" | jq -r '.dir')
@@ -15,8 +15,8 @@ for k in $(jq -c ' .include | .[] | values ' <<< "$MATRIX" ); do
 
   # bump package.json
   if [[ "$CHANGES" == "1" ]]; then
-    echo "* Bump ${NAME} ${OLD_VERSION} -> ${NEW_VERSION} 🚀"
-    ( cd $DIR; >&2 npm version --git-tag-version=false v${NEW_VERSION} )
+    echo "* Bump ${NAME} package from ${OLD_VERSION} -> ${NEW_VERSION} 🚀"
+    ( set -x; cd $DIR; >&2 npm version --git-tag-version=false v${NEW_VERSION} )
   fi
 done
 
