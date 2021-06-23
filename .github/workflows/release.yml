@@ -5,13 +5,8 @@ on:
     branches:
       - 'main'
     paths:
-      - ".github/workflows/**"
-      - ".scripts/**"
       - "router/**"
       - "subgraphs/**"
-      - "k8s/**"
-      - "supergraph.graphql"
-      - "supergraph.yaml"
   workflow_dispatch:
     inputs:
       rebuildAll:
