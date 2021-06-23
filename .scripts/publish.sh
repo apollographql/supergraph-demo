@@ -3,7 +3,15 @@
 source "$(dirname $0)/subgraphs.sh"
 source "$(dirname $0)/get-env.sh"
 
-graph=$1
+if [[ "$1" == "default" ]]; then
+  if [[ -n $APOLLO_GRAPH_REF ]]; then
+    graph=$APOLLO_GRAPH_REF
+    echo -------------------------------------------------------------------------------------------
+    echo "using: ${graph}"
+    echo -------------------------------------------------------------------------------------------
+  fi
+fi
+
 if [[ -z "${graph}" ]]; then
   source "$(dirname $0)/get-graph-ref.sh"
 fi

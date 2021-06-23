@@ -156,21 +156,79 @@ docker-compose down
 
 [Managed Federation](https://www.apollographql.com/docs/federation/managed-federation/overview/) in Apollo Studio enables teams to independently publish subgraphs to the Apollo Registry, so they can be automatically composed into a supergraph for apps to use.
 
+### Create a Federated Graph in Apollo Studio
+
 To get started with Managed Federation, create your Apollo account:
 
 * Signup for a free Team trial: https://studio.apollographql.com/signup
 * Create an organization
 * **Important:** use the `Team` trial which gives you access Apollo features like `Schema Checks`.
 
-Create a `Graph` of type `Deployed` with the `Federation` option.
+Then create a `Graph` of type `Deployed` with the `Federation` option.
 
-Create the `graph-api.env` file with `APOLLO_KEY` using:
+Once you have created your graph in Apollo Studio, run the following:
 
 ```sh
-make graph-api-env
+make demo-managed
 ```
 
-for use in `docker-compose.managed.yml`:
+### Connect to your Graph in Apollo Studio
+
+which will prompt for your `graph key` and `graph ref` and save them to `./graph-api.env`:
+
+* `graph key` - the graph API key used to authenticate with Apollo Studio.
+* `graph ref` - a reference to the graph in Apollo's registry the graph router should pull from.
+  * in the form `<graph-id>@<variant>`
+  * `@<variant>` is optional and will default to `@current`
+  * examples: `my-graph@dev`, `my-graph@stage`, `my-graph@prod`
+* see [configuration reference](https://www.apollographql.com/docs/apollo-server/api/apollo-server/#apollo) for details.
+
+Note: The generated `./graph-api.env` holds your `APOLLO_KEY` and `APOLLO_GRAPH_REF`.
+
+### Publish Subgraph Schemas to the Apollo Registry
+
+`make demo-managed` will publish the `subgraphs/**.graphql` schemas to your new `Federated` graph in the Apollo Registry, which performs managed composition and schema checks, to prevent breaking changes:
+
+```sh
+make publish
+```
+
+Temporary composition errors may surface as each subgraph is published:
+
+```
++ rover subgraph publish supergraph-router@dev --routing-url http://products:4000/graphql --schema subgraphs/products/products.graphql --name products
+
+Publishing SDL to supergraph-router:dev (subgraph: products) using credentials from the default profile.
+
+A new subgraph called 'products' for the 'supergraph-router' graph was created.
+
+The gateway for the 'supergraph-router' graph was NOT updated with a new schema
+
+WARN: The following composition errors occurred:
+Unknown type "User".
+[products] Query -> `Query` is an extension type, but `Query` is not defined in any service
+```
+
+Success! Once all subgraphs are published the supergraph will be updated, for example:
+
+```
++ rover subgraph publish supergraph-router@dev --routing-url https://users:4000/graphql --schema subgraphs/users/users.graphql --name users
+
+Publishing SDL to supergraph-router:dev (subgraph: users) using credentials from the default profile.
+
+A new subgraph called 'users' for the 'supergraph-router' graph was created
+
+The gateway for the 'supergraph-router' graph was updated with a new schema, composed from the updated 'users' subgraph
+```
+
+Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the subgraphs it's composed from:
+![Federated Graph in Apollo Studio](docs/media/studio.png)
+
+### Run the Graph Router and Subgraph Containers
+
+The graph-router and subgraph services will be started by `make demo-managed` next.
+
+using `docker-compose.managed.yml`:
 
 ```yaml
 version: '3'
@@ -180,8 +238,7 @@ services:
     build: ./router
     environment:
       - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
-      - APOLLO_GRAPH_REF=supergraph-router@dev
-    env_file: # create with make graph-api-env
+    env_file: # created with: make graph-api-env
       - graph-api.env
     ports:
       - "4000:4000"
@@ -195,48 +252,6 @@ services:
     container_name: users
     build: ./subgraphs/users
 ```
-
-Then run the Managed Federation demo:
-
-```sh
-make demo-managed
-```
-
-Which publishes your subgraphs to your new `Federated` graph in the Apollo Registry:
-
-```sh
-# publish subgraph schemas to a federated graph in the registry, for composition into a managed supergraph
-make publish
-```
-
-Interim composition errors may surface as each subgraph is published:
-
-```
-+ rover subgraph publish supergraph-router@dev --routing-url http://products:4000/graphql --schema subgraphs/products/products.graphql --name products
-
-Publishing SDL to supergraph-router:dev (subgraph: products) using credentials from the default profile.
-A new subgraph called 'products' for the 'supergraph-router' graph was created.
-The gateway for the 'supergraph-router' graph was NOT updated with a new schema
-
-WARN: The following composition errors occurred:
-Unknown type "User".
-[products] Query -> `Query` is an extension type, but `Query` is not defined in any service
-```
-
-However once all subgraphs are published the supergraph will be updated, for example:
-
-```
-+ rover subgraph publish supergraph-router@dev --routing-url https://users:4000/graphql --schema subgraphs/users/users.graphql --name users
-
-Publishing SDL to supergraph-router:dev (subgraph: users) using credentials from the default profile.
-A new subgraph called 'users' for the 'supergraph-router' graph was created
-The gateway for the 'supergraph-router' graph was updated with a new schema, composed from the updated 'users' subgraph
-```
-
-Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the subgraphs it's composed from:
-![Federated Graph in Apollo Studio](docs/media/studio.png)
-
-and finally the graph-router container is started:
 
 ```sh
 make docker-up-managed
@@ -254,19 +269,29 @@ Apollo usage reporting starting! See your graph at https://studio.apollographql.
 🚀 Server ready at http://localhost:4000/
 ```
 
+### Make a Federated Query
+
 `make demo-managed` then issues a curl request to the graph router:
 
 ```sh
 make query
 ```
 
-which issues the same query as above.
+which has the same query and response as above.
+
+### Clean Up
 
 `make demo-managed` then shuts down the graph router:
 
 ```sh
 make docker-down
 ```
+
+## Ship Faster Without Breaking Changes
+
+Apollo Schema Checks help ensure subgraph changes don't break the federated graph, reducing downtime and enabling teams to ship faster.
+
+### The Graph Router will Update In Place
 
 With Managed Federation you can leave graph-router running and it will
 update automatically when subgraph changes are published and they successfully
@@ -282,11 +307,9 @@ Apollo usage reporting starting! See your graph at https://studio.apollographql.
 🚀 Server ready at http://localhost:4000/
 ```
 
-## Ship Faster Without Breaking Changes
+### Simulating a Change to the Product Subgraph
 
-Apollo Schema Checks help ensure subgraph changes don't break the federated graph, reducing downtime and enabling teams to ship faster.
-
-To simulate a breaking change, add a `Color` `enum` to `.subgraphs/products.graphql`:
+To simulate a change to the products subgraph, add a `Color` `enum` to `.subgraphs/products.graphql`:
 
 ```ts
 enum Color {
@@ -310,6 +333,8 @@ enum Color {
 }
 ```
 
+### Run a Schema Check
+
 and do a schema `check` against the published version in the registry:
 
 ```sh
@@ -332,6 +357,8 @@ Compared 3 schema changes against 2 operations
 └────────┴─────────────────────────┴──────────────────────────────────────────┘
 ```
 
+### Publish Validated Subgraph Schemas to Apollo Registry
+
 Then `publish` the changes and `check` again:
 
 ```sh
@@ -347,6 +374,10 @@ Checked the proposed subgraph against supergraph-demo@current
 There were no changes detected in the composed schema.
 ```
 
+### Recap
+
+Using `rover` in a local dev environment helps catch potentially breaking changes sooner. The next section covers how `rover` can be integrated into your CI/CD environments, and how Managed Federation catches breaking changes before they are delivered to the graph router.
+
 ## CI/CD
 
 ### Overview
@@ -361,7 +392,7 @@ _CI_ for each subgraph:
   * `rover subgraph check`
 * on config merge/push (after the subgraph service has been deployed):
   * `rover subgraph check`
-  * `rover subgraph publish`
+  * `rover subgraph publish` - after a new version of a subgraph service is live
 * [Managed Federation](https://www.apollographql.com/docs/federation/managed-federation/overview/)
   * Runs [schema checks](https://www.apollographql.com/docs/studio/schema-checks/) after each `rover subgraph publish`
   * Composes a supergraph schema if all checks pass

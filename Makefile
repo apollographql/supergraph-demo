@@ -8,7 +8,7 @@ ci: supergraph docker-up smoke docker-down
 demo: supergraph docker-up query docker-down
 
 .PHONY: demo-managed
-demo-managed: publish docker-up-managed query docker-down
+demo-managed: ensure-graph-api-env publish-default docker-up-managed query docker-down
 
 .PHONY: demo-k8s
 demo-k8s: k8s-up k8s-smoke k8s-down
@@ -52,6 +52,10 @@ compose:
 publish:
 	.scripts/publish.sh
 
+.PHONY: publish-default
+publish-default:
+	.scripts/publish.sh default
+
 .PHONY: unpublish
 unpublish:
 	.scripts/unpublish.sh
@@ -59,6 +63,10 @@ unpublish:
 .PHONY: graph-api-env
 graph-api-env:
 	@.scripts/graph-api-env.sh
+
+.PHONY: ensure-graph-api-env
+ensure-graph-api-env:
+	@.scripts/get-env.sh
 
 .PHONY: check-products
 check-products:
