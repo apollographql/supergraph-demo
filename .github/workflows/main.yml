@@ -5,9 +5,6 @@ on:
     paths-ignore:
       - 'README.md'
       - 'docs/**'
-      - 'k8s/infra/dev'
-      - 'k8s/subgraphs/dev'
-      - 'k8s/router/dev'
   schedule:
     - cron: '30 7 * * *'
 
