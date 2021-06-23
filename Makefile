@@ -46,9 +46,7 @@ config:
 
 .PHONY: compose
 compose:
-	rover supergraph compose --config ./supergraph.yaml > ./supergraph.graphql
-	cp supergraph.graphql k8s/router/base
-	cp supergraph.graphql k8s/router/dev
+	.scripts/compose.sh
 
 .PHONY: publish
 publish:
