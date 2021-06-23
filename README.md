@@ -576,6 +576,8 @@ and then creates:
 * graph-router `Deployment` configured to use a supergraph `ConfigMap`
 * graph-router `Service` and `Ingress`
 
+### Gateway Deployment with Supergraph ConfigMap
+
 using [k8s/router/base/router.yaml](k8s/router/base/router.yaml) via:
 
 ```sh
