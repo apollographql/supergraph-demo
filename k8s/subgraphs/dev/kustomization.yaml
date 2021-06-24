@@ -5,7 +5,7 @@ resources:
 images:
 - name: prasek/subgraph-inventory:latest
   newName: prasek/subgraph-inventory
-  newTag: 1.1.6
+  newTag: 1.1.7
 - name: prasek/subgraph-products:latest
   newName: prasek/subgraph-products
   newTag: 1.1.3
