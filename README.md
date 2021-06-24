@@ -17,7 +17,6 @@ Contents:
 * [Deploying to Kubernetes](#deploying-to-kubernetes)
 * [Kubernetes-native GraphOps](#kubernetes-native-graphops)
 * [Learn More](#learn-more)
-* [Appendix: Detailed CI/CD Setup](#appendix-detailed-cicd-setup)
 
 ## Welcome
 
@@ -380,11 +379,11 @@ Using `rover` in a local dev environment helps catch potentially breaking change
 
 ### Overview
 
-This example repo is a monorepo with packages for all subgraphs and the graph router. The [artifact publish workflow](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/release.yml) does an incremental matrix build and pushes new docker images to DockerHub, so they're available for whatever deployment workflow you'd like to use.
+This example repo is a monorepo with packages for all subgraphs and the graph router. The [release.yml workflow](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/release.yml) does an incremental matrix build and pushes new docker images to DockerHub, so they're available for whatever deployment workflow you'd like to use.
 
 ![publish-artifacts-workflow](docs/media/ci/publish-artifacts-workflow.png)
 
-This workflow can be easily adapted for a single repo per package scenarios.
+Note: This workflow can be easily adapted for a single repo per package scenarios.
 
 ### Subgraph CI Setup
 
