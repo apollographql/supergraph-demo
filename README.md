@@ -20,7 +20,7 @@ Contents:
 
 ## Welcome
 
-Apollo Federation and Managed Federation have delivered significant
+[Apollo Federation](https://www.apollographql.com/docs/federation/) and [Managed Federation](https://www.apollographql.com/docs/federation/managed-federation/overview/) have delivered significant
 improvements over schema stitching and alternate approaches. Static
 composition introduces another big step forward as we move composition out of
 the Gateway and into the CI pipeline where federated graph changes can be
@@ -59,6 +59,8 @@ curl -sSL https://rover.apollo.dev/nix/latest | sh
 ```
 
 ## Local Supergraph Composition
+
+See also: [local schema composition docs](https://www.apollographql.com/docs/federation/quickstart/)
 
 You can federate multiple subgraphs into a supergraph using:
 
@@ -150,6 +152,8 @@ docker-compose down
 ```
 
 ## Composition in Apollo Studio
+
+See also: [composition in Apollo Studio docs](https://www.apollographql.com/docs/federation/quickstart-pt-2/)
 
 [Managed Federation](https://www.apollographql.com/docs/federation/managed-federation/overview/) in Apollo Studio enables teams to independently publish subgraphs to the Apollo Registry, so they can be automatically composed into a supergraph for apps to use.
 
@@ -285,6 +289,8 @@ make docker-down
 ```
 
 ## Ship Faster Without Breaking Changes
+
+See also: [working with subgraphs docs](https://www.apollographql.com/docs/federation/quickstart-pt-3/)
 
 Apollo Schema Checks help ensure subgraph changes don't break the federated graph, reducing downtime and enabling teams to ship faster.
 
