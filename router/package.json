@@ -1,6 +1,6 @@
 {
   "name": "supergraph-router",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "",
   "main": "router.js",
   "scripts": {
