@@ -670,6 +670,15 @@ Deleting cluster "kind" ...
 
 Large-scale graph operators use Kubernetes to run their Graph Router and Subgraph Services, with continuous app and service delivery. Kubernetes provides a mature control-plane for deploying and operating your graph using the container images produced by this `source repo` -- which propagates new docker image versions to the [supergraph-demo-k8s-graphops](https://github.com/apollographql/supergraph-demo-k8s-graphops) `config repo`, with `kustomize` configs to deploy to Kubernetes for `dev`, `stage`, and `prod` environments.
 
+This [supergraph-demo](https://github.com/apollographql/supergraph-demo) `source repo` is a monorepo, so all subgraphs and the router packages are in the same repo. However, this can be split out into separate repos for each subgraph and the router, so they can publish new docker images separately, and then independetly submit version bump PRs to the [supergraph-demo-k8s-graphops](https://github.com/apollographql/supergraph-demo-k8s-graphops) `config repo`. Once testing passes on `dev' these new versions can be promoted to `stage` and `prod`.
+
+The [example monorepo release workflow](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/release.yml) does an incremental matrix build and pushes new docker images to DockerHub. It can easily be adapted to polyrepo scenarios which is conceptually simpler from a CI perspective, but has the following downsides:
+* have to checkout multiple repos - not great for a demo repo!
+* no support for atomic cross-cutting changes for multiple services in a single commit
+* `config repo` has to manage version bumps from multiple `source repos` (deal with more individual PRs or a consolidator).
+
+Whatever your preference, Apollo Federation works well both for monorepo and polyrepo scenarios.
+
 ## Learn More
 
 Apollo tools and services help you develop, maintain, operate, and scale your data graph.
@@ -681,32 +690,50 @@ Learn more:
 
 ## Appendix: Detailed CI/CD Setup
 
-### CI Setup
+### Subgraph CI Setup
 
 * Create [graph variants](https://www.apollographql.com/docs/studio/org/graphs/) in Apollo Studio for `dev`, `staging`, and `prod`:
 * Configure [schema checks](https://www.apollographql.com/docs/studio/schema-checks/) for your graph:
   * [Federated composition checks](https://www.apollographql.com/docs/studio/schema-checks/#federated-composition-checks) will run against the subgraph schemas published to each variant.
   * [Operation checks](https://www.apollographql.com/docs/studio/schema-checks/#types-of-checks) should be configured to validate real world [schema usage](https://www.apollographql.com/docs/studio/check-configurations/#using-apollo-studio-recommended) with usage data from `staging` and `prod` variants.
   * Configure Gateway deployments to provide [usage reporting](https://www.apollographql.com/docs/apollo-server/api/plugin/usage-reporting/#gatsby-focus-wrapper) data for operation checks.
-
-* For each graph variant: `dev`, `staging`, and `prod`:
-  * config pull requests: [subgraph-check.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-check.yml)
-    * `rover subgraph check`
-  * config merge/push: [subgraph-publish.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-publish.yml)
-    * run after the subgraph service has been deployed
-    * `rover subgraph check`
-    * `rover subgraph publish`
-  * Managed Federation
-    * Runs schema checks after each `rover subgraph publish`
-    * Composes a supergraph schema if all checks pass
-    * Makes the supergraph schema available in the:
-      * Registry - for retrieval via `rover supergraph fetch`
-      * Uplink - that the Gateway can poll for live updates.
+  * CI for each subgraph:
+    * Source Pull Requests: [subgraph-check.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-check.yml)
+      * `rover subgraph check`
+      * schema checks against schema in the `dev` variant
+      * operation checks against usage data in the `prod` and typically `stage` variants.
 
 * If you’re in a monorepo:
-  * Consider using 3-way merges and [overriding the APOLLO_VCS_COMMIT and/or APOLLO_VCS_BRANCH](https://www.apollographql.com/docs/rover/configuring/#overriding) to correlate schema changes for subgraphs.
+  * Consider using 3-way merges and [overriding the APOLLO_VCS_COMMIT and/or APOLLO_VCS_BRANCH](https://www.apollographql.com/docs/rover/configuring/#overriding) to correlate schema changes for subgraph changes.
 
-### CD: Update Gateway In Place
+### Subgraph CD Setup
+
+* Subgraph Deployment
+* Push to main branch [subgraph-deploy-publish.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-deploy-publish.yml)
+  * Before subgraph deployment - do a sanity check
+    * `rover subgraph check`
+  * Deploy subgraph service - must deploy the service before publishing schema
+  * After subgraph deployment - publish to the registry for Managed Federation to compose and check the schema across all subgraphs
+    * `rover subgraph publish`
+
+* Managed Federation
+  * Runs schema checks after each `rover subgraph publish`
+  * Composes a supergraph schema if all checks pass
+  * Makes the supergraph schema available in the:
+    * `Apollo Uplink` - that the Gateway can poll for live updates (default).
+    * `Apollo Registry` - for retrieval via `rover supergraph fetch`.
+    * `Apollo Build Webhook` - for triggering custom CD with the composed supergraph schema.
+
+### Gateway CI Setup
+
+* `Bump image versions` when Gateway package changes detected:
+  * see [example monorepo release workflow](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/release.yml)
+  * detect changes
+  * bumps package versions in this `source repo`.
+  * does an incremental monorepo build and pushes new docker images to DockerHub.
+  * opens `config repo` PR to bump the docker image versions in the `dev` environment (auto-merge).
+
+### Gateway CD: Update in Place (Managed Federation)
 
 The default Gateway configuration for Managed Federation is to update the Gateway in place when a new supergraph schema is published to the Uplink. Gateways in the fleet poll the Uplink every 10 seconds by default, so there will be a fast rolling upgrade as Gateways check the Uplink, without the need to restart the Gateway.
 
@@ -718,28 +745,42 @@ Steps:
   * pull supergraph schema from their respective graph variants, via the [Apollo Uplink](https://www.apollographql.com/docs/federation/quickstart-pt-2/#managed-federation-basics).
   * provide [usage reporting](https://www.apollographql.com/docs/apollo-server/api/plugin/usage-reporting/#gatsby-focus-wrapper) data for operation checks.
 
-### CD: GitOps via Extended CI
+### Gateway CD: Custom
 
-A new supergraph `ConfigMap` is generated using `kustomize` when changes are detected via:
-* [Supergraph build webhooks](https://www.apollographql.com/blog/announcement/webhooks/) - when a new supergraph schema is created
-* `rover supergraph fetch` - to poll the Registry for updates
+Custom CD obtain new supergraph schemas via:
+* [supergraph build webhook](https://www.apollographql.com/blog/announcement/webhooks/) - pushes from Managed Federation.
+* `rover supergraph fetch` - pulls from the `Apollo Registry`.
 
-An updated Gateway `Deployment` references new supergraph schema `ConfigMap` via:
-* `kubectl apply` in place - resulting in a [rolling upgrade](https://github.com/kubernetes-sigs/kustomize/blob/master/examples/configGeneration.md)
-* Progressive delivery controllers like [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) or [Flagger](https://flagger.app/)
-* Suitable for `BlueGreen` and `Canary` deployment strategies
+In practice it can be a good idea to do both, which is what the [supergraph-build-webhook.yml](https://github.com/apollographql/supergraph-demo-k8s-graphops/blob/main/.github/workflows/supergraph-build-webhook.yml) workflow does:
+* [supergraph build webhook](https://www.apollographql.com/blog/announcement/webhooks/) - trigger immediate CD workflow execution
+* `rover supergraph fetch` - used inside the CD workflow, which is also scheduled to poll for redundancy
 
-Gateway `Deployments` can be rolled back to an earlier supergraph schema by applying an earlier version of the Gateway `Deployment` that referenced an earlier supergraph `ConfigMap`.
+In the [supergraph-demo-k8s-graphops](https://github.com/apollographql/supergraph-demo-k8s-graphops) `config repo`:
 
-To produce the new supergraph schema `Config Map`, this option extends the CI steps above:
+* `config repo` PR is opened (auto-merge):
+  * `Bump image versions` when new Gateway docker image versions are published:
+    * see end of the [example monorepo release workflow](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/release.yml)
+    * bumps package versions in this `source repo`.
+    * does an incremental monorepo build and pushes new docker images to DockerHub.
+    * opens `config repo` PR to bump the docker image versions in the `dev` environment (auto-merge).
+* `config repo` PR is opened (auto-merge):
+  * `Bump supergraph schema` when published by Managed federation
+    * using above techniques: webhook, `rover supergraph fetch`
+* `kustomize` generates
+  * new supergraph `ConfigMap`
+  * updated Gateway `Deployment` which references
+    * supergraph `ConfigMap`
+    * Gateway image versions
+* deployment via:
+  * `kubectl apply` in place - resulting in a [rolling upgrade](https://github.com/kubernetes-sigs/kustomize/blob/master/examples/configGeneration.md)
+  * GitOps tools like [ArgoCD](https://argoproj.github.io/) and [Flux](https://fluxcd.io/)
+  * Progressive delivery controllers like [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) or [Flagger](https://flagger.app/)
+    * Supports `BlueGreen` and `Canary` deployment strategies
+* rollback by rolling back in git to a deployment config that uses a previous supergraph.graphql for a given environment `dev`, `stage`, `prod`.
+* separation of concerns between developer repos and ops config repos.
+* full audit trail
 
-1. Detect changes to the supergraph schema built via Managed Federation in Apollo Studio
-2. Create a PR to bump [supergraph.graphql](supergraph.graphql) so Git is a source of truth
-3. Generate a new supergraph `ConfigMap` and associated Gateway `Deployment`
-
-The resulting Gateway configuration can be applied directly with `kubectl`, with GitOps, and/or using `BlueGreen` and `Canary` deployments with a progressive delivery controller.
-
-#### Extended CI Steps
+#### Gateway CD: Custom - Steps
 
 1. Detecting changes to the supergraph built via Managed Federation
 
@@ -749,16 +790,15 @@ The resulting Gateway configuration can be applied directly with `kubectl`, with
      * `rover supergraph fetch` - to poll the Registry
 
 2. `Bump supergraph schema` PR with auto-merge enabled when changes detected
-   * Workflow: [supergraph-build-webhook.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/supergraph-build-webhook.yml)
-   * Commits a new [supergraph.graphql](supergraph.graphql) with the new version from Apollo Studio
+   * Workflow: [supergraph-build-webhook.yml](https://github.com/apollographql/supergraph-demo-k8s-graphops/blob/main/.github/workflows/supergraph-build-webhook.yml)
+   * Commits a new supergraph.graphql to the `config repo` with the new version from Apollo Studio
    * Additional CI checks on the supergraph schema are required for the PR to merge
    * Auto-merged when CI checks pass
 
 3. Generate a new Gateway `Deployment` and `ConfigMap` using `kustomize`
    * Once changes to `supergraph.graphql` when `Bump supergraph schema` is merged
-   * Typically in a separate config repo
 
-#### Extended CI Steps (Details)
+#### Gateway CD: Custom - Detailed Steps
 
 1. Register the webhook in Apollo Studio in your graph settings
    * Send the webhook to an automation service or serverless function:
@@ -770,16 +810,17 @@ The resulting Gateway configuration can be applied directly with `kubectl`, with
    * ![webhook-proxy](docs/media/ci/webhook-proxy.png)
 
 3. `repository_dispatch` event triggers a GitHub workflow
-   * [supergraph-build-webhook.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/supergraph-build-webhook.yml)
+   * [supergraph-build-webhook.yml](https://github.com/apollographql/supergraph-demo-k8s-graphops/blob/main/.github/workflows/supergraph-build-webhook.yml)
    * uses both `repository_dispatch` and `scheduled` to catch any lost webhooks:
    * ![repository_dispatch](docs/media/ci/repository-dispatch-triggered.png)
 
 4. GitHub workflow automatically creates a PR with auto-merge enabled
-   * [supergraph-build-webhook.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/supergraph-build-webhook.yml)
+   * [supergraph-build-webhook.yml](https://github.com/apollographql/supergraph-demo-k8s-graphops/blob/main/.github/workflows/supergraph-build-webhook.yml)
    * using a GitHub action like [Create Pull Request](https://github.com/marketplace/actions/create-pull-request) - see [concepts & guidelines](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md)
    * ![pr-created](docs/media/ci/supergraph-pr-automerged.png)
    * uses `kustomize` to generate:
      * a new supergraph schema `ConfigMap`
      * a new Gateway `Deployment` that references the new `ConfigMap`
 
-5. Apply the updated Gateway `Deployment` and supergraph `ConfigMap`
+5. Apply the updated Gateway `Deployment` and supergraph `ConfigMap` to `dev`
+6. Promote config from `dev` -> `stage` -> `prod`
