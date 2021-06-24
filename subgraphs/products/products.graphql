@@ -1,6 +1,8 @@
+directive @tag(name: String!) repeatable on FIELD_DEFINITION
+
 type Product @key(fields: "id") @key(fields: "sku package") @key(fields: "sku variation { id }"){
-  id: ID!
-  sku: String
+  id: ID! @tag(name: "hi from products")
+  sku: String @tag(name: "hi from products")
   package: String
   variation: ProductVariation
   dimensions: ProductDimension
@@ -10,11 +12,6 @@ type Product @key(fields: "id") @key(fields: "sku package") @key(fields: "sku va
 
 type ProductVariation {
   id: ID!
-}
-
-enum Color {
-  BLUE
-  GREEN
 }
 
 type ProductDimension {
