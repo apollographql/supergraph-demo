@@ -12,6 +12,11 @@ type ProductVariation {
   id: ID!
 }
 
+enum Color {
+  BLUE
+  GREEN
+}
+
 type ProductDimension {
   size: String
   weight: Float
