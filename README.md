@@ -378,6 +378,14 @@ Using `rover` in a local dev environment helps catch potentially breaking change
 
 ## CI Overview
 
+### Overview
+
+This example repo is a monorepo with packages for all subgraphs and the graph router. The [artifact publish workflow](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/release.yml) does an incremental matrix build and pushes new docker images to DockerHub, so they're available for whatever deployment workflow you'd like to use.
+
+![publish-artifacts-workflow](docs/media/ci/publish-artifacts-workflow.png)
+
+This workflow can be easily adapted for a single repo per package scenarios.
+
 ### Subgraph CI Setup
 
 * Create [graph variants](https://www.apollographql.com/docs/studio/org/graphs/) in Apollo Studio for `dev`, `staging`, and `prod`:
@@ -689,16 +697,6 @@ Deleting cluster "kind" ...
 ## Kubernetes-native GraphOps
 
 Large-scale graph operators use Kubernetes to run their Graph Router and Subgraph Services, with continuous app and service delivery. Kubernetes provides a mature control-plane for deploying and operating your graph using the container images produced by this `source repo` -- which propagates new docker image versions to the [supergraph-demo-k8s-graphops](https://github.com/apollographql/supergraph-demo-k8s-graphops) `config repo`, with `kustomize` configs to deploy to Kubernetes for `dev`, `stage`, and `prod` environments.
-
-This [supergraph-demo](https://github.com/apollographql/supergraph-demo) `source repo` is a monorepo, so all subgraphs and the router packages are in the same repo. However, this can be split out into separate repos for each subgraph and the router, so they can publish new docker images separately, and then independetly submit version bump PRs to the [supergraph-demo-k8s-graphops](https://github.com/apollographql/supergraph-demo-k8s-graphops) `config repo`. Once testing passes on `dev' these new versions can be promoted to `stage` and `prod`.
-
-The [example monorepo release workflow](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/release.yml) does an incremental matrix build and pushes new docker images to DockerHub. It can easily be adapted to polyrepo scenarios which is conceptually simpler from a CI perspective, but has the following downsides:
-
-* have to checkout multiple repos - not great for a demo repo!
-* no support for atomic cross-cutting changes for multiple services in a single commit
-* `config repo` has to manage version bumps from multiple `source repos` (deal with more individual PRs or a consolidator).
-
-Whatever your preference, Apollo Federation works well both for monorepo and polyrepo scenarios.
 
 ## Learn More
 

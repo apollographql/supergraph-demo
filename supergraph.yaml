@@ -8,6 +8,6 @@ subgraphs:
     schema:
       file: ./subgraphs/products/products.graphql
   users:
-    routing_url: https://users:4000/graphql
+    routing_url: http://users:4000/graphql
     schema:
       file: ./subgraphs/users/users.graphql
