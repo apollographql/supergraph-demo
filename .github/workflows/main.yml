@@ -2,9 +2,6 @@ name: CI
 on:
   pull_request:
     branches: [ main ]
-    paths-ignore:
-      - 'README.md'
-      - 'docs/**'
   schedule:
     - cron: '30 7 * * *'
 
