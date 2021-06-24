@@ -134,6 +134,10 @@ act-release:
 act-subgraph-check:
 	act -P $(ubuntu-latest) -W .github/workflows/subgraph-check.yml --secret-file graph-api.env --detect-event
 
+.PHONY: act-subgraph-deploy-publish
+act-subgraph-deploy-publish:
+	act -P $(ubuntu-latest) -W .github/workflows/subgraph-deploy-publish.yml --secret-file graph-api.env --detect-event
+
 .PHONY: act-config-pr
 act-config-pr:
 	act -P $(ubuntu-latest) -W .github/workflows/config-pr.yml --secret-file docker.secrets --detect-event -s PAT

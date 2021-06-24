@@ -37,9 +37,9 @@ jobs:
           echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
       -
         name: subgraph check
-        run: rover subgraph check $GRAPH_REF --schema subgraphs/dev/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
+        run: rover subgraph check $GRAPH_REF --schema subgraphs/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
       -
-       name: "TODO: deploy your subgraph to dev"
+        name: "TODO: deploy your subgraph to dev"
         run: |
           echo "TODO: ADD YOUR DEPLOYMENT STEPS HERE"
           echo "which should only complete when the new version of the subgraph is deployed"
@@ -49,4 +49,4 @@ jobs:
           echo "for a more scalable way of doing this in a Kubernetes-native way."
       -
         name: subgraph publish
-        run: rover subgraph publish $GRAPH_REF --routing-url ${{ matrix.routing_url }} --schema subgraphs/dev/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
+        run: rover subgraph publish $GRAPH_REF --routing-url ${{ matrix.routing_url }} --schema subgraphs/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
