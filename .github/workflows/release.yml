@@ -379,11 +379,11 @@ jobs:
           token: ${{ secrets.PAT }}
           committer: Supergraph Demo Bot <prasek+bot@gmail.com>
           author: Supergraph Demo Bot <prasek+bot@gmail.com>
-          commit-message: Bump artifact versions
-          title:  Bump artifact versions
+          commit-message: Bump image versions
+          title:  Bump image versions
           body: |
             ${{ env.IMAGE_BUMP_PR_MSG }}
-          branch: image-version-bump
+          branch: bump-image-versions
           base: main
           delete-branch: true
       -
