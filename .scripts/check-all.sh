@@ -12,5 +12,8 @@ fi
 
 echo "checking all subgraphs:"
 for subgraph in ${subgraphs[@]}; do
+  echo -------------------------------------------------------------------------------------------
+  echo "subgraph: ${subgraph}"
+  echo -------------------------------------------------------------------------------------------
   (set -x; ${ROVER_BIN:-'rover'} subgraph check ${graph} --schema subgraphs/${subgraph}/${subgraph}.graphql --name $subgraph)
 done
