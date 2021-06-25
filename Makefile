@@ -167,6 +167,6 @@ docker-prune:
 
 .PHONY: promote-config
 promote-config:
-	cp -r ./k8s/* ../supergraph-demo-gitops ; \
-	cd ../supergraph-demo-gitops ; \
+	cp -r ./k8s/* ../supergraph-demo-k8s-graph-ops ; \
+	cd ../supergraph-demo-k8s-graph-ops ; \
 	git diff | cat
