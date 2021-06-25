@@ -8,7 +8,7 @@ TESTS=(1 2)
 # --------------------------------------------------------------------
 read -r -d '' QUERY_1 <<"EOF"
 {
-	allProducts {
+  allProducts {
     delivery {
       estimatedDelivery,
       fastestDelivery
@@ -30,8 +30,8 @@ EOF
 # --------------------------------------------------------------------
 read -r -d '' QUERY_2 <<"EOF"
 {
-	allProducts {
-    id, 
+  allProducts {
+    id,
     sku,
     createdBy {
       email,
@@ -60,8 +60,11 @@ for test in ${TESTS[@]}; do
   QUERY=$(echo "${!query_var}" | awk -v ORS= -v OFS= '{$1=$1}1')
   EXP="${!exp_var}"
   ACT=$(set -x; curl -X POST -H 'Content-Type: application/json' --data '{ "query": "'"${QUERY}"'" }' http://localhost:$PORT/)
-  echo $ACT
   if [ "$ACT" = "$EXP" ]; then
+      echo ""
+      echo "Result:"
+      echo "$ACT"
+      echo ""
       echo "Success!"
   else
       echo -------------------------------------------------------------------------------------------
