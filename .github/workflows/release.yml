@@ -360,11 +360,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
-        name: checkout supergraph-demo-gitops
+        name: checkout supergraph-demo-k8s-graph-ops
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.PAT }}
-          repository: apollographql/supergraph-demo-gitops
+          repository: apollographql/supergraph-demo-k8s-graph-ops
       -
         name: version bump
         id: version-bump
@@ -394,7 +394,7 @@ jobs:
         uses: peter-evans/enable-pull-request-automerge@v1
         with:
           token: ${{ secrets.PAT }}
-          repository: apollographql/supergraph-demo-gitops
+          repository: apollographql/supergraph-demo-k8s-graph-ops
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
           merge-method: rebase
       -
