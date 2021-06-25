@@ -16,8 +16,11 @@ if [[ -z "${graph}" ]]; then
   source "$(dirname $0)/get-graph-ref.sh"
 fi
 
-echo "subgraphs:"
 for subgraph in ${subgraphs[@]}; do
+  echo -------------------------------------------------------------------------------------------
+  echo "subgraph: ${subgraph}"
+  echo -------------------------------------------------------------------------------------------
   url="url_$subgraph"
   (set -x; ${ROVER_BIN:-'rover'} subgraph publish ${graph} --routing-url "${!url}" --schema subgraphs/${subgraph}/${subgraph}.graphql --name ${subgraph} --convert)
+  echo ""
 done
