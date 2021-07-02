@@ -6,6 +6,8 @@ if [[ "$1" != "local" ]]; then
   GITHUB_EVENT_BEFORE=${GITHUB_EVENT_BEFORE:-HEAD^}
 fi
 
+FORCE_VERSION_BUMP=$2
+
 # for dynamic build matrix in GitHub actions, see:
 # https://github.community/t/check-pushed-file-changes-with-git-diff-tree-in-github-actions/17220/10
 
@@ -55,7 +57,7 @@ for package in $PACKAGES; do
   >&2 echo "------------------------------"
   >&2 echo "$DIR changes"
   >&2 echo "------------------------------"
-  if [[ -n "$DIFF" ]];  then
+  if [[ -n "$DIFF" || "$FORCE_VERSION_BUMP" == "force-version-bump" ]];  then
     >&2 echo "$DIFF"
     (cd $DIR; cp package.json package.json.bak)
     NEW_VERSION=$(cd $DIR; npm version --git-tag-version=false patch | sed 's|^v||')

@@ -10,9 +10,13 @@ on:
   workflow_dispatch:
     inputs:
       rebuildAll:
-        description: 'Rebuild all packages (yes/no)'
+        description: 'Rebuild/publish all packages (yes/no)'
         required: false
         default: 'yes'
+      forceVersionBump:
+        description: 'Force version bump all packages (yes/no)'
+        required: false
+        default: 'no'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -77,8 +81,14 @@ jobs:
           GITHUB_SHA: ${{ env.GITHUB_SHA}}
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
           REBUILD_ALL: ${{ github.event.inputs && github.event.inputs.rebuildAll == 'yes' }}
+          FORCE_VERSION_BUMP: ${{ github.event.inputs && github.event.inputs.forceVersionBump == 'yes' }}
         run: |
-          PACKAGES=$(.scripts/build-matrix.sh)
+          if [[ "$FORCE_VERSION_BUMP" == "true" ]]; then
+            PACKAGES=$(.scripts/build-matrix.sh main force-version-bump)
+          else
+            PACKAGES=$(.scripts/build-matrix.sh)
+          fi
+
           if [[ "$REBUILD_ALL" == "true" ]]; then
             MATRIX="$PACKAGES"
           else
