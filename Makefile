@@ -76,6 +76,26 @@ check-products:
 check-all:
 	.scripts/check-all.sh
 
+.PHONY: docker-up-zipkin
+docker-up-zipkin:
+	docker-compose -f docker-compose.otel-zipkin.yml up -d
+	@sleep 2
+	docker-compose -f docker-compose.otel-zipkin.yml logs
+
+.PHONY: docker-down-zipkin
+docker-down-zipkin:
+	docker-compose -f docker-compose.otel-zipkin.yml down
+
+.PHONY: docker-up-otel-collector
+docker-up-otel-collector:
+	docker-compose -f docker-compose.otel-collector.yml up -d
+	@sleep 2
+	docker-compose -f docker-compose.otel-collector.yml logs
+
+.PHONY: docker-down-otel-collector
+docker-down-otel-collector:
+	docker-compose -f docker-compose.otel-collector.yml down
+
 .PHONY: k8s-up
 k8s-up:
 	.scripts/k8s-up.sh
@@ -164,9 +184,3 @@ docker-build-users:
 .PHONY: docker-prune
 docker-prune:
 	.scripts/docker-prune.sh
-
-.PHONY: promote-config
-promote-config:
-	cp -r ./k8s/* ../supergraph-demo-k8s-graph-ops ; \
-	cd ../supergraph-demo-k8s-graph-ops ; \
-	git diff | cat
