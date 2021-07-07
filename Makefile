@@ -2,7 +2,7 @@
 default: demo
 
 .PHONY: ci
-ci: supergraph docker-up smoke docker-down
+ci: supergraph docker-build docker-up smoke docker-down
 
 .PHONY: demo
 demo: supergraph docker-up query docker-down
@@ -18,6 +18,10 @@ docker-up:
 	docker-compose up -d
 	@sleep 2
 	@docker logs router
+
+.PHONY: docker-build
+docker-build:
+	docker-compose build
 
 .PHONY: docker-up-managed
 docker-up-managed:
