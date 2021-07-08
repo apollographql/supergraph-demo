@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '30 7 * * *'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ci-docker-managed:
     name: CI Managed Federation
@@ -69,6 +73,3 @@ jobs:
         run: .scripts/smoke.sh 4000
       - name: docker-compose down
         run: docker-compose down
-      - name: unpublish
-        run: |
-          make unpublish
