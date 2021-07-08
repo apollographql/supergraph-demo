@@ -2,7 +2,7 @@
 default: demo
 
 .PHONY: ci
-ci: supergraph docker-build docker-up smoke docker-down
+ci: supergraph docker-build-force docker-up smoke docker-down
 
 .PHONY: demo
 demo: supergraph docker-up query docker-down
@@ -22,6 +22,10 @@ docker-up:
 .PHONY: docker-build
 docker-build:
 	docker-compose build
+
+.PHONY: docker-build-force
+docker-build-force:
+	docker-compose build --no-cache --pull --parallel --progress plain
 
 .PHONY: docker-up-managed
 docker-up-managed:
