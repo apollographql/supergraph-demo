@@ -1,14 +1,18 @@
-name: CI
+name: CI Managed Federation
 on:
-  pull_request:
+  push:
     branches: [ main ]
   schedule:
     - cron: '30 7 * * *'
 
 jobs:
-  ci-docker-local:
-    name: CI
+  ci-docker-managed:
+    name: CI Managed Federation
     runs-on: ubuntu-latest
+    env:
+      CI: "true"
+      APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+      APOLLO_GRAPH_REF: supergraph-router@ci
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -47,18 +51,24 @@ jobs:
           ( set -x; which docker-compose )
           echo "$(docker-compose --version)"
           echo ---------------------------------------------------------------
-      - name: make supergraph
+      - name: unpublish
         run: |
-          make supergraph
+          make unpublish
+      - name: publish
+        run: |
+          make publish
       - name: docker-compose build
         run: |
           ( set -x; docker-compose build --no-cache --pull --parallel --progress plain )
-      - name: docker-compose up -d
+      - name: docker-compose -f docker-compose.managed.yml up -d
         run: |
-          ( set -x; docker-compose up -d )
+          ( set -x; docker-compose -f docker-compose.managed.yml up -d )
           sleep 3
           docker-compose logs
       - name: smoke test
         run: .scripts/smoke.sh 4000
       - name: docker-compose down
         run: docker-compose down
+      - name: unpublish
+        run: |
+          make unpublish

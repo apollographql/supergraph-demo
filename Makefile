@@ -8,7 +8,7 @@ ci: supergraph docker-build-force docker-up smoke docker-down
 demo: supergraph docker-up query docker-down
 
 .PHONY: demo-managed
-demo-managed: ensure-graph-api-env publish-default docker-up-managed query docker-down
+demo-managed: publish docker-up-managed query docker-down
 
 .PHONY: demo-k8s
 demo-k8s: k8s-up k8s-smoke k8s-down
@@ -60,10 +60,6 @@ compose:
 publish:
 	.scripts/publish.sh
 
-.PHONY: publish-default
-publish-default:
-	.scripts/publish.sh default
-
 .PHONY: unpublish
 unpublish:
 	.scripts/unpublish.sh
@@ -71,10 +67,6 @@ unpublish:
 .PHONY: graph-api-env
 graph-api-env:
 	@.scripts/graph-api-env.sh
-
-.PHONY: ensure-graph-api-env
-ensure-graph-api-env:
-	@.scripts/get-env.sh
 
 .PHONY: check-products
 check-products:
@@ -147,8 +139,15 @@ dep-act:
 ubuntu-latest=ubuntu-latest=catthehacker/ubuntu:act-latest
 
 .PHONY: act
-act:
+act: act-ci-local
+
+.PHONY: act-ci-local
+act-ci-local:
 	act -P $(ubuntu-latest) -W .github/workflows/main.yml --detect-event
+
+.PHONY: act-ci-managed
+act-ci-managed:
+	act -P $(ubuntu-latest) -W .github/workflows/managed.yml --secret-file graph-api.env --detect-event -j ci-docker-managed
 
 .PHONY: act-rebase
 act-rebase:
@@ -156,7 +155,7 @@ act-rebase:
 
 .PHONY: act-release
 act-release:
-	act -P $(ubuntu-latest) -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/release.yml --secret-file docker.secrets
+	act -P $(ubuntu-latest) -W .github/workflows/release.yml --secret-file docker.secrets
 
 .PHONY: act-subgraph-check
 act-subgraph-check:
@@ -165,29 +164,6 @@ act-subgraph-check:
 .PHONY: act-subgraph-deploy-publish
 act-subgraph-deploy-publish:
 	act -P $(ubuntu-latest) -W .github/workflows/subgraph-deploy-publish.yml --secret-file graph-api.env --detect-event
-
-.PHONY: act-config-pr
-act-config-pr:
-	act -P $(ubuntu-latest) -W .github/workflows/config-pr.yml --secret-file docker.secrets --detect-event -s PAT
-
-.PHONY: docker-build
-docker-build: docker-build-router docker-build-products docker-build-inventory docker-build-users
-
-.PHONY: docker-build-router
-docker-build-router:
-	docker build -t prasek/supergraph-router:latest router/.
-
-.PHONY: docker-build-products
-docker-build-products:
-	docker build -t prasek/subgraph-products:latest subgraphs/products/.
-
-.PHONY: docker-build-inventory
-docker-build-inventory:
-	docker build -t prasek/subgraph-inventory:latest subgraphs/inventory/.
-
-.PHONY: docker-build-users
-docker-build-users:
-	docker build -t prasek/subgraph-users:latest subgraphs/users/.
 
 .PHONY: docker-prune
 docker-prune:
