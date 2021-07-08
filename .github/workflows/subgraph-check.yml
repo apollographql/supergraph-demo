@@ -14,7 +14,7 @@ jobs:
         subgraph: ["products", "users", "inventory"]
     env:
       APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
-      APOLLO_GRAPH_REF: supergraph-router@dev
+      APOLLO_GRAPH_REF: supergraph-router@ci
 
     name: ${{ matrix.subgraph }}
     steps:
