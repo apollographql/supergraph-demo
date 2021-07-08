@@ -50,9 +50,12 @@ jobs:
       - name: make supergraph
         run: |
           make supergraph
+      - name: docker-compose build
+        run: |
+          ( set -x; docker-compose build --no-cache --pull --parallel --progress plain )
       - name: docker-compose up -d
         run: |
-          docker-compose up -d
+          ( set -x; docker-compose up -d )
           sleep 3
           docker-compose logs
       - name: smoke test
