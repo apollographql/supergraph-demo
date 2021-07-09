@@ -38,7 +38,9 @@ jobs:
           echo "PATH=$PATH:$HOME/.rover/bin" >> ${GITHUB_ENV}
       -
         name: subgraph check
-        run: rover subgraph check $APOLLO_GRAPH_REF --schema subgraphs/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
+        run: |
+          set -x
+          rover subgraph check $APOLLO_GRAPH_REF --schema subgraphs/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
       -
         name: "TODO: deploy your subgraph to dev"
         run: |
@@ -50,4 +52,6 @@ jobs:
           echo "for a more scalable way of doing this in a Kubernetes-native way."
       -
         name: subgraph publish
-        run: rover subgraph publish $APOLLO_GRAPH_REF --routing-url ${{ matrix.routing_url }} --schema subgraphs/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
+        run: |
+          set -x
+          rover subgraph publish $APOLLO_GRAPH_REF --routing-url ${{ matrix.routing_url }} --schema subgraphs/${{ matrix.subgraph }}/${{ matrix.subgraph }}.graphql --name ${{ matrix.subgraph }}
