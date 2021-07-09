@@ -17,18 +17,18 @@ if [[ "${CI}" != "true" ]]; then
   if [[ "$key" == "default" ]]; then
     if [[ -n $APOLLO_KEY ]]; then
       key=$APOLLO_KEY
-      echo -------------------------------------------------------------------------------------------
-      echo "using default APOLLO_KEY"
-      echo -------------------------------------------------------------------------------------------
+      echo "---------------------------------------"
+      echo "Using default APOLLO_KEY"
+      echo "---------------------------------------"
     else
       unset key
     fi
   fi
 
   if [[ -z "${key}" ]]; then
-    echo -------------------------------------------------------------------------------------------
-    echo Enter your Graph API Key - to set APOLLO_KEY
-    echo -------------------------------------------------------------------------------------------
+    echo "---------------------------------------"
+    echo "Enter your APOLLO_KEY"
+    echo "---------------------------------------"
     echo "Go to your graph settings in https://studio.apollographql.com/"
     echo "then create a Graph API Key with Contributor permissions"
     echo "(for metrics reporting) and enter it at the prompt below."
@@ -44,9 +44,9 @@ if [[ "${CI}" != "true" ]]; then
       if [[ -n "$APOLLO_KEY" ]]; then
         key=$APOLLO_KEY
       else
-        >&2 echo -------------------------------------------------------------------------------------------
-        >&2 echo APOLLO_KEY not found, run: make graph-api-env again
-        >&2 echo -------------------------------------------------------------------------------------------
+        >&2 echo "---------------------------------------"
+        >&2 echo "APOLLO_KEY not found"
+        >&2 echo "---------------------------------------"
         exit 1
       fi
     fi
@@ -61,18 +61,18 @@ if [[ "${CI}" != "true" ]]; then
   if [[ "$graph" == "default" ]]; then
     if [[ -n $APOLLO_GRAPH_REF ]]; then
       graph=$APOLLO_GRAPH_REF
-      echo -------------------------------------------------------------------------------------------
-      echo "using default APOLLO_GRAPH_REF: ${graph}"
-      echo -------------------------------------------------------------------------------------------
+      echo "---------------------------------------"
+      echo "Using APOLLO_GRAPH_REF: ${graph}"
+      echo "---------------------------------------"
     else
       unset graph
     fi
   fi
 
   if [[ -z "${graph}" ]]; then
-    echo -------------------------------------------------------------------------------------------
-    echo "Graph Ref - to set APOLLO_GRAPH_REF"
-    echo -------------------------------------------------------------------------------------------
+    echo "---------------------------------------"
+    echo "Enter your APOLLO_GRAPH_REF"
+    echo "---------------------------------------"
     echo "Go to your graph settings in https://studio.apollographql.com/"
     echo "then copy your Graph NAME and optionally @<VARIANT> and enter it at the prompt below."
     echo "@<VARIANT> will default to @current, if omitted."
@@ -87,9 +87,9 @@ if [[ "${CI}" != "true" ]]; then
       if [[ -n "$APOLLO_GRAPH_REF" ]]; then
         graph=$APOLLO_GRAPH_REF
       else
-        >&2 echo -------------------------------------------------------------------------------------------
-        >&2 echo APOLLO_GRAPH_REF not found, run: make graph-api-env again
-        >&2 echo -------------------------------------------------------------------------------------------
+        >&2 echo "---------------------------------------"
+        >&2 echo "APOLLO_GRAPH_REF not found"
+        >&2 echo "---------------------------------------"
         exit 1
       fi
     fi
@@ -104,16 +104,16 @@ echo "APOLLO_GRAPH_REF=${APOLLO_GRAPH_REF}" >> graph-api.env
 
 ok=1
 if [[ -z "${APOLLO_KEY}" ]]; then
-  >&2 echo -------------------------------------------------------------------------------------------
-  >&2 echo APOLLO_KEY not found
-  >&2 echo -------------------------------------------------------------------------------------------
+  >&2 echo "---------------------------------------"
+  >&2 echo "APOLLO_KEY not found"
+  >&2 echo "---------------------------------------"
   ok=0
 fi
 
 if [[ -z "${APOLLO_GRAPH_REF}" ]]; then
-  >&2 echo -------------------------------------------------------------------------------------------
-  >&2 echo APOLLO_GRAPH_REF not found
-  >&2 echo -------------------------------------------------------------------------------------------
+  >&2 echo "---------------------------------------"
+  >&2 echo "APOLLO_GRAPH_REF not found"
+  >&2 echo "---------------------------------------"
   ok=0
 fi
 
