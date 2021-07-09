@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "======================================="
+echo "SUBGRAPH UNPUBLISH"
+echo "======================================="
+
 source "$(dirname $0)/subgraphs.sh"
 source "$(dirname $0)/graph-api-env.sh"
 
