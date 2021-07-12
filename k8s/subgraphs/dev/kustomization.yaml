@@ -8,7 +8,7 @@ images:
   newTag: 1.1.12
 - name: prasek/subgraph-products:latest
   newName: prasek/subgraph-products
-  newTag: 1.1.7
+  newTag: 1.1.8
 - name: prasek/subgraph-users:latest
   newName: prasek/subgraph-users
   newTag: 1.1.11
