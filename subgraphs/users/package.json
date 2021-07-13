@@ -7,7 +7,7 @@
     "start": "node users.js"
   },
   "dependencies": {
-    "@apollo/federation": "0.25.2",
+    "@apollo/federation": "0.26.0",
     "apollo-server": "3.0.0",
     "supergraph-demo-opentelemetry": "0.0.1",
     "graphql": "15.5.1"
