@@ -50,6 +50,7 @@ jobs:
       - name: make supergraph
         run: |
           make supergraph
+          cat supergraph.graphql
       - name: docker-compose build
         run: |
           ( set -x; docker-compose build --no-cache --pull --parallel --progress plain )
