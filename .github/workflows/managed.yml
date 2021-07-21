@@ -16,7 +16,7 @@ jobs:
     env:
       CI: "true"
       APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
-      APOLLO_GRAPH_REF: supergraph-router@ci
+      APOLLO_GRAPH_REF: ${{ secrets.APOLLO_GRAPH_REF }}
     steps:
       - name: checkout
         uses: actions/checkout@v2
