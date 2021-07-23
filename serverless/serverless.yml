@@ -16,11 +16,7 @@ functions:
     events:
       - http:
           path: router
-          method: POST
-          cors: true
-      - http:
-          path: router
-          method: GET
+          method: ANY
           cors: true
   inventory:
     handler: src/subgraphs.inventoryHandler
