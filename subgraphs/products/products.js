@@ -25,7 +25,7 @@ const products = [
     { id: 'apollo-federation', sku: 'federation', package: '@apollo/federation', variation: "OSS" },
     { id: 'apollo-studio', sku: 'studio', package: '', variation: "platform" },
 ]
-const ql = readFileSync('./products.graphql', { encoding: 'utf-8' });
+const ql = readFileSync(resolve(__dirname, './products.graphql'), { encoding: 'utf-8' });
 const typeDefs = gql(ql) ;
 const resolvers = {
     Query: {
@@ -58,3 +58,6 @@ const server = new ApolloServer({ schema: buildFederatedSchema({ typeDefs, resol
 server.listen( {port: port} ).then(({ url }) => {
   console.log(`🚀 Products subgraph ready at ${url}`);
 }).catch(err => {console.error(err)});
+
+exports.typeDefs = typeDefs;
+exports.resolvers = resolvers;

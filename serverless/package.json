@@ -1,0 +1,20 @@
+{
+  "name": "supergraph-serverless",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "serverless offline",
+    "graphql:compose": "rover supergraph compose --config supergraph.yaml > supergraph.graphql"
+  },
+  "dependencies": {
+    "@apollo/gateway": "^0.34.0",
+    "apollo-server-lambda": "^3.0.2",
+    "graphql": "^15.5.1"
+  },
+  "devDependencies": {
+    "@apollo/rover": "^0.1.9",
+    "serverless": "^2.52.1",
+    "serverless-offline": "^7.0.0"
+  }
+}

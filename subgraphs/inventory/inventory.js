@@ -26,7 +26,7 @@ const delivery = [
     { id: 'apollo-studio', estimatedDelivery: '6/25/2021', fastestDelivery: '6/24/2021' },
 ]
 
-const typeDefs = gql(readFileSync('inventory.graphql', { encoding: 'utf-8' }));
+const typeDefs = gql(readFileSync(resolve(__dirname, './inventory.graphql'), { encoding: 'utf-8' }));
 const resolvers = {
     Product: {
         delivery: (product, args, context) => {
@@ -38,3 +38,6 @@ const server = new ApolloServer({ schema: buildFederatedSchema({ typeDefs, resol
 server.listen( {port: port} ).then(({ url }) => {
   console.log(`🚀 Inventory subgraph ready at ${url}`);
 }).catch(err => {console.error(err)});
+
+exports.typeDefs = typeDefs;
+exports.resolvers = resolvers;
