@@ -725,6 +725,61 @@ More info:
     * [subgraphs/products/products.js](subgraphs/products/products.js)
 * Docs: [Open Telemetry for Apollo Federation](https://www.apollographql.com/docs/federation/opentelemetry/)
 
+## Serverless
+
+```
+make demo-serverless
+```
+
+which does the following:
+
+```
+rover supergraph compose --config serverless/supergraph.yaml > serverless/supergraph.graphql
+docker-compose -f docker-compose.serverless.yml up -d
+Creating network "supergraph-demo_default" with the default driver
+Creating serverless ... done
+docker-compose -f docker-compose.serverless.yml logs
+Attaching to serverless
+serverless    | Serverless: Running "serverless" installed locally (in service node_modules)
+serverless    | offline: Starting Offline: dev/us-east-1.
+serverless    | offline: Offline [http for lambda] listening on http://0.0.0.0:3002
+serverless    | offline: Function names exposed for local invocation by aws-sdk:
+serverless    |            * router: supergraph-serverless-dev-router
+serverless    |            * inventory: supergraph-serverless-dev-inventory
+serverless    |            * products: supergraph-serverless-dev-products
+serverless    |            * users: supergraph-serverless-dev-users
+serverless    |
+serverless    |  ┌───────────────────────────────────────────────────────────────────────────┐
+serverless    |  │                                                                           │
+serverless    |  │   ANY | http://0.0.0.0:4000/                                              │
+serverless    |  │   POST | http://0.0.0.0:4000/2015-03-31/functions/router/invocations      │
+serverless    |  │   ANY | http://0.0.0.0:4000/inventory                                     │
+serverless    |  │   POST | http://0.0.0.0:4000/2015-03-31/functions/inventory/invocations   │
+serverless    |  │   ANY | http://0.0.0.0:4000/products                                      │
+serverless    |  │   POST | http://0.0.0.0:4000/2015-03-31/functions/products/invocations    │
+serverless    |  │   ANY | http://0.0.0.0:4000/users                                         │
+serverless    |  │   POST | http://0.0.0.0:4000/2015-03-31/functions/users/invocations       │
+serverless    |  │                                                                           │
+serverless    |  └───────────────────────────────────────────────────────────────────────────┘
+serverless    |
+serverless    | offline: [HTTP] server ready: http://0.0.0.0:4000 🚀
+serverless    | offline:
+serverless    | offline: Enter "rp" to replay the last request
+-------------------------------------------------------------------------------------------
+++ curl -X POST -H 'Content-Type: application/json' --data '{ "query": "{allProducts{id,sku,createdBy{email,totalProductsCreated}}}" }' http://localhost:4000/
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   341  100   267  100    74    331     91 --:--:-- --:--:-- --:--:--   423
+
+Result:
+{"data":{"allProducts":[{"id":"apollo-federation","sku":"federation","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}},{"id":"apollo-studio","sku":"studio","createdBy":{"email":"support@apollographql.com","totalProductsCreated":1337}}]}}
+-------------------------------------------------------------------------------------------
+docker-compose -f docker-compose.serverless.yml down
+Stopping serverless ... done
+Removing serverless ... done
+Removing network supergraph-demo_default
+```
+
 ## Learn More
 
 Apollo tools and services help you develop, maintain, operate, and scale your data graph.

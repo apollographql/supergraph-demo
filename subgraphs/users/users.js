@@ -13,11 +13,9 @@ if (process.env.APOLLO_OTEL_EXPORTER_TYPE) {
   }).setupInstrumentation();
 }
 
-// Main
-const { readFileSync } = require('fs');
-const { resolve } = require('path');
 const { ApolloServer, gql } = require('apollo-server');
 const { buildFederatedSchema } = require('@apollo/federation');
+const { readFileSync } = require('fs');
 
 const port = process.env.APOLLO_PORT || 4000;
 
@@ -25,7 +23,7 @@ const users = [
     { email: 'support@apollographql.com', name: "Apollo Studio Support", totalProductsCreated: 4 }
 ]
 
-const typeDefs = gql(readFileSync(resolve(__dirname, './users.graphql'), { encoding: 'utf-8' }));
+const typeDefs = gql(readFileSync('./users.graphql', { encoding: 'utf-8' }));
 const resolvers = {
     User: {
         __resolveReference: (reference) => {
@@ -37,6 +35,3 @@ const server = new ApolloServer({ schema: buildFederatedSchema({ typeDefs, resol
 server.listen( {port: port} ).then(({ url }) => {
   console.log(`🚀 Users subgraph ready at ${url}`);
 }).catch(err => {console.error(err)});
-
-exports.typeDefs = typeDefs;
-exports.resolvers = resolvers;

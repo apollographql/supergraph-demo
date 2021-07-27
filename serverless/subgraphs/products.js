@@ -1,29 +1,14 @@
-// Open Telemetry (optional)
-const { ApolloOpenTelemetry } = require('supergraph-demo-opentelemetry');
-
-if (process.env.APOLLO_OTEL_EXPORTER_TYPE) {
-  new ApolloOpenTelemetry({
-    type: 'subgraph',
-    name: 'products',
-    exporter: {
-      type: process.env.APOLLO_OTEL_EXPORTER_TYPE, // console, zipkin, collector
-      host: process.env.APOLLO_OTEL_EXPORTER_HOST,
-      port: process.env.APOLLO_OTEL_EXPORTER_PORT,
-    }
-  }).setupInstrumentation();
-}
-
-const { ApolloServer, gql } = require('apollo-server');
+const { ApolloServer, gql } = require("apollo-server-lambda");
 const { buildFederatedSchema } = require('@apollo/federation');
 const { readFileSync } = require('fs');
-
-const port = process.env.APOLLO_PORT || 4000;
+const { resolve } = require('path');
 
 const products = [
     { id: 'apollo-federation', sku: 'federation', package: '@apollo/federation', variation: "OSS" },
     { id: 'apollo-studio', sku: 'studio', package: '', variation: "platform" },
 ]
-const typeDefs = gql(readFileSync('./products.graphql', { encoding: 'utf-8' }));
+const ql = readFileSync(resolve(__dirname, './products.graphql'), { encoding: 'utf-8' });
+const typeDefs = gql(ql) ;
 const resolvers = {
     Query: {
         allProducts: (_, args, context) => {
@@ -51,7 +36,6 @@ const resolvers = {
         }
     }
 }
+
 const server = new ApolloServer({ schema: buildFederatedSchema({ typeDefs, resolvers }) });
-server.listen( {port: port} ).then(({ url }) => {
-  console.log(`🚀 Products subgraph ready at ${url}`);
-}).catch(err => {console.error(err)});
+exports.handler = server.createHandler();

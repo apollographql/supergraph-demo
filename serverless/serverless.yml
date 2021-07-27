@@ -7,33 +7,33 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   lambdaHashingVersion: 20201221
 
 functions:
   router:
-    handler: src/router.routerHandler
+    handler: router.handler
     events:
       - http:
-          path: router
+          path: /
           method: ANY
           cors: true
   inventory:
-    handler: src/subgraphs.inventoryHandler
+    handler: subgraphs/inventory.handler
     events:
       - http:
           path: inventory 
           method: ANY
           cors: true
   products:
-    handler: src/subgraphs.productsHandler
+    handler: subgraphs/products.handler
     events:
       - http:
           path: products
           method: ANY
           cors: true
   users:
-    handler: src/subgraphs.usersHandler
+    handler: subgraphs/users.handler
     events:
       - http:
           path: users
@@ -44,3 +44,5 @@ custom:
   serverless-offline:
     noPrependStageInUrl: true
     useChildProcesses: true
+    host: 0.0.0.0
+    httpPort: 4000

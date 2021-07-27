@@ -13,6 +13,9 @@ demo-managed: publish docker-up-managed query docker-down
 .PHONY: demo-k8s
 demo-k8s: k8s-up k8s-smoke k8s-down
 
+.PHONY: demo-serverless
+demo-serverless: supergraph-serverless docker-up-serverless query docker-down-serverless
+
 .PHONY: docker-up
 docker-up:
 	docker-compose up -d
@@ -95,6 +98,20 @@ docker-up-otel-collector:
 .PHONY: docker-down-otel-collector
 docker-down-otel-collector:
 	docker-compose -f docker-compose.otel-collector.yml down
+
+.PHONY: supergraph-serverless
+supergraph-serverless:
+	rover supergraph compose --config serverless/supergraph.yaml > serverless/supergraph.graphql
+
+.PHONY: docker-up-serverless
+docker-up-serverless:
+	docker-compose -f docker-compose.serverless.yml up -d
+	@sleep 4
+	docker-compose -f docker-compose.serverless.yml logs
+
+.PHONY: docker-down-serverless
+docker-down-serverless:
+	docker-compose -f docker-compose.serverless.yml down
 
 .PHONY: k8s-up
 k8s-up:

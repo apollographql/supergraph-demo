@@ -1,13 +1,13 @@
 subgraphs:
   inventory:
-    routing_url: http://localhost:3000/inventory
+    routing_url: http://localhost:4000/inventory
     schema:
-      file: ../subgraphs/inventory/inventory.graphql
+      file: subgraphs/inventory.graphql
   products:
-    routing_url: http://localhost:3000/products
+    routing_url: http://localhost:4000/products
     schema:
-      file: ../subgraphs/products/products.graphql
+      file: subgraphs/products.graphql
   users:
-    routing_url: http://localhost:3000/users
+    routing_url: http://localhost:4000/users
     schema:
-      file: ../subgraphs/users/users.graphql
+      file: subgraphs/users.graphql
