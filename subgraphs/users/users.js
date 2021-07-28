@@ -13,11 +13,9 @@ if (process.env.APOLLO_OTEL_EXPORTER_TYPE) {
   }).setupInstrumentation();
 }
 
-// Main
-const { readFileSync } = require('fs');
-const { resolve } = require('path');
 const { ApolloServer, gql } = require('apollo-server');
 const { buildFederatedSchema } = require('@apollo/federation');
+const { readFileSync } = require('fs');
 
 const port = process.env.APOLLO_PORT || 4000;
 

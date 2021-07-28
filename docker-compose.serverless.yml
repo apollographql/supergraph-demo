@@ -1,0 +1,11 @@
+version: '3'
+services:
+  serverless:
+    container_name: serverless
+    build: ./serverless
+    environment:
+      - APOLLO_SCHEMA_CONFIG_EMBEDDED=true
+    volumes:
+      - ./serverless/supergraph.graphql:/etc/config/supergraph.graphql
+    ports:
+      - "4000:4000"
