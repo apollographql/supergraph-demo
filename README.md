@@ -9,15 +9,22 @@ Contents:
 
 * [Welcome](#welcome)
 * [Prerequisites](#prerequisites)
-* [Local Supergraph Composition](#local-supergraph-composition)
-* [Composition in Apollo Studio](#composition-in-apollo-studio)
-* [Ship Faster Without Breaking Changes](#ship-faster-without-breaking-changes)
-* [CI Overview](#ci-overview)
-* [CD Overview](#cd-overview)
-* [Deploying to Kubernetes](#deploying-to-kubernetes)
-* [Kubernetes-native GraphOps](#kubernetes-native-graphops)
-* [Open Telemetry](#open-telemetry)
-* [Learn More](#learn-more)
+* [Local Development](#local-development)
+  * [Local Supergraph Composition](#local-supergraph-composition)
+  * [Apollo Sandbox for Local Development](#apollo-sandbox-for-local-development)
+  * [Tracing with Open Telemetry](#tracing-with-open-telemetry)
+* [Apollo Studio](#apollo-studio)
+  * [Composition in Apollo Studio](#composition-in-apollo-studio)
+  * [Ship Faster Without Breaking Changes](#ship-faster-without-breaking-changes)
+
+* [Standard CI/CD](#standard-cicd)
+  * [Subgraph CI](#subgraph-ci)
+  * [Subgraph Deployment](#subgraph-deployment)
+  * [Gateway CI](#gateway-ci)
+  * [Gateway Deployment](#gateway-deployment)
+* [Deployment Examples](#deployment-examples)
+  * [Kubernetes with Supergraph ConfigMap](#kubernetes-with-supergraph-configmap)
+  * [Serverless](#serverless)
 
 ## Welcome
 
@@ -59,9 +66,11 @@ To install `rover`:
 curl -sSL https://rover.apollo.dev/nix/latest | sh
 ```
 
-## Local Supergraph Composition
+## Local Development
 
-See also: [local schema composition docs](https://www.apollographql.com/docs/federation/quickstart/)
+### Local Supergraph Composition
+
+See also: [Apollo Federation docs](https://www.apollographql.com/docs/federation/quickstart/)
 
 You can federate multiple subgraphs into a supergraph using:
 
@@ -106,16 +115,14 @@ make query
 which issues the following query that fetches across 3 subgraphs:
 
 ```ts
-{
-  query: {
-    allProducts: {
-      id,
-      sku,
-      createdBy {
-        email,
-        totalProductsCreated
-      }
-     }
+query Query {
+  allProducts {
+    id
+    sku
+    createdBy {
+      email
+      totalProductsCreated
+    }
   }
 }
 ```
@@ -152,13 +159,87 @@ with results like:
 docker-compose down
 ```
 
-## Composition in Apollo Studio
+### Apollo Sandbox for Local Development
 
-See also: [composition in Apollo Studio docs](https://www.apollographql.com/docs/federation/quickstart-pt-2/)
+#### Deploy Graph
+
+```
+make docker-up
+```
+
+#### Query using Apollo Sandbox
+
+1. Open [http://localhost:4000/](http://localhost:4000/)
+2. Click `Query your server`
+3. Run a query:
+
+```ts
+query Query {
+  allProducts {
+    id
+    sku
+    createdBy {
+      email
+      totalProductsCreated
+    }
+  }
+}
+```
+
+View results:
+
+![Apollo Sandbox Screenshot](docs/media/apollo-sandbox.png)
+
+#### Cleanup
+
+```
+make docker-down
+```
+
+### Tracing with Open Telemetry
+
+#### Deploy Graph with Open Telemetry Collector
+
+```
+make docker-up-otel-collector
+```
+
+#### Run Queries
+
+```
+make smoke
+```
+
+#### View Open Telemetry Traces
+
+browse to [http://localhost:9411/](http://localhost:9411/)
+
+![opentelemetry](docs/media/opentelemetry.png)
+
+#### Cleanup
+
+```
+make docker-down-otel-collector
+```
+
+#### Learn More
+
+* Docs: [Open Telemetry for Apollo Federation](https://www.apollographql.com/docs/federation/opentelemetry/)
+* Docker compose file: [docker-compose.otel-collector.yml](docker-compose.otel-collector.yml)
+* Helper library: [supergraph-demo-opentelemetry](https://github.com/prasek/supergraph-demo-opentelemetry)
+  * See usage in:
+    * [router/router.js](router/router.js)
+    * [subgraphs/products/products.js](subgraphs/products/products.js)
+
+## Apollo Studio
+
+### Composition in Apollo Studio
+
+See also: [Apollo Studio docs](https://www.apollographql.com/docs/federation/quickstart-pt-2/)
 
 [Managed Federation](https://www.apollographql.com/docs/federation/managed-federation/overview/) in Apollo Studio enables teams to independently publish subgraphs to the Apollo Registry, so they can be automatically composed into a supergraph for apps to use.
 
-### Create a Federated Graph in Apollo Studio
+#### Create a Federated Graph in Apollo Studio
 
 To get started with Managed Federation, create your Apollo account:
 
@@ -174,7 +255,7 @@ Once you have created your graph in Apollo Studio, run the following:
 make demo-managed
 ```
 
-### Connect to your Graph in Apollo Studio
+#### Connect to your Graph in Apollo Studio
 
 which will prompt for your `graph key` and `graph ref` and save them to `./graph-api.env`:
 
@@ -187,7 +268,7 @@ which will prompt for your `graph key` and `graph ref` and save them to `./graph
 
 Note: The generated `./graph-api.env` holds your `APOLLO_KEY` and `APOLLO_GRAPH_REF`.
 
-### Publish Subgraph Schemas to the Apollo Registry
+#### Publish Subgraph Schemas to the Apollo Registry
 
 `make demo-managed` will publish the `subgraphs/**.graphql` schemas to your new `Federated` graph in the Apollo Registry, which performs managed composition and schema checks, to prevent breaking changes:
 
@@ -226,7 +307,7 @@ The gateway for the 'supergraph-router' graph was updated with a new schema, com
 Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the subgraphs it's composed from:
 ![Federated Graph in Apollo Studio](docs/media/studio.png)
 
-### Run the Graph Router and Subgraph Containers
+#### Run the Graph Router and Subgraph Containers
 
 The graph-router and subgraph services will be started by `make demo-managed` next.
 
@@ -271,7 +352,7 @@ Apollo usage reporting starting! See your graph at https://studio.apollographql.
 🚀 Server ready at http://localhost:4000/
 ```
 
-### Make a Federated Query
+#### Make a Federated Query
 
 `make demo-managed` then issues a curl request to the graph router:
 
@@ -281,7 +362,7 @@ make query
 
 which has the same query and response as above.
 
-### Clean Up
+#### Clean Up
 
 `make demo-managed` then shuts down the graph router:
 
@@ -289,13 +370,13 @@ which has the same query and response as above.
 make docker-down
 ```
 
-## Ship Faster Without Breaking Changes
+### Ship Faster Without Breaking Changes
 
 See also: [working with subgraphs docs](https://www.apollographql.com/docs/federation/quickstart-pt-3/)
 
 Apollo Schema Checks help ensure subgraph changes don't break the federated graph, reducing downtime and enabling teams to ship faster.
 
-### The Graph Router will Update In Place
+#### The Graph Router will Update In Place
 
 With Managed Federation you can leave graph-router running and it will
 update automatically when subgraph changes are published and they successfully
@@ -311,7 +392,7 @@ Apollo usage reporting starting! See your graph at https://studio.apollographql.
 🚀 Server ready at http://localhost:4000/
 ```
 
-### Simulating a Change to the Product Subgraph
+#### Simulating a Change to the Product Subgraph
 
 To simulate a change to the products subgraph, add a `Color` `enum` to `.subgraphs/products.graphql`:
 
@@ -337,7 +418,7 @@ enum Color {
 }
 ```
 
-### Run a Schema Check
+#### Run a Schema Check
 
 Run a schema `check` against the published version in the registry:
 
@@ -361,7 +442,7 @@ Compared 3 schema changes against 2 operations
 └────────┴─────────────────────────┴──────────────────────────────────────────┘
 ```
 
-### Publish Validated Subgraph Schemas to Apollo Registry
+#### Publish Validated Subgraph Schemas to Apollo Registry
 
 Then `publish` the changes and `check` again:
 
@@ -378,21 +459,15 @@ Checked the proposed subgraph against supergraph-demo@current
 There were no changes detected in the composed schema.
 ```
 
-### Recap
+#### Recap
 
 Using `rover` in a local dev environment helps catch potentially breaking changes sooner. The next section covers how `rover` can be integrated into your CI/CD environments, and how Managed Federation catches breaking changes before they are delivered to the graph router.
 
-## CI Overview
+## Standard CI/CD
 
-### Overview
+This example repo is a monorepo, but this same basic CI/CD workflow applies for single-repo-per-package scenarios.
 
-This example repo is a monorepo with packages for all subgraphs and the graph router. The [release.yml workflow](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/release.yml) does an incremental matrix build and pushes new docker images to DockerHub, so they're available for whatever deployment workflow you'd like to use.
-
-![publish-artifacts-workflow](docs/media/ci/publish-artifacts-workflow.png)
-
-Note: This workflow can be easily adapted for a single repo per package scenarios.
-
-### Subgraph CI Setup
+### Subgraph CI
 
 * Create [graph variants](https://www.apollographql.com/docs/studio/org/graphs/) in Apollo Studio for `dev`, `staging`, and `prod`:
 * Configure [schema checks](https://www.apollographql.com/docs/studio/schema-checks/) for your graph:
@@ -420,20 +495,11 @@ review the check, mark things safe and then re-run your pipeline.
 
 ![schema-check-mark-safe](docs/media/schema-check-mark-safe.png)
 
-### Gateway CI Setup
-
-* Bump image versions when Gateway package changes detected:
-  * see [example monorepo release workflow](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/release.yml)
-  * bumps package versions in this `source repo`.
-  * does an incremental monorepo build and pushes new docker images to DockerHub.
-
-## CD Overview
-
-### Subgraph CD Setup
+### Subgraph Deployment
 
 * Run a deployment workflow like this simple example [subgraph-deploy-publish.yml](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/subgraph-deploy-publish.yml)
   * Before subgraph deployment
-    * Do a sanity check with `rover subgraph check`
+    * Do a reality check with `rover subgraph check`
   * Deploy subgraph service
     * Should have the service deployed before publishing the subgraph schema
   * After subgraph deployment
@@ -449,7 +515,7 @@ Publishing subgraph schema changes with `rover subgraph publish` always stores a
 * Makes the supergraph schema available in the:
   * `Apollo Uplink` - that the Gateway can poll for live updates (default).
   * `Apollo Registry` - for retrieval via `rover supergraph fetch`.
-  * `Apollo Build Webhook` - for triggering custom CD with the composed supergraph schema.
+  * `Apollo Supergraph Build Webhook` - for custom integrations
 
 Key benefits to Managed Federation:
 
@@ -458,18 +524,33 @@ Key benefits to Managed Federation:
 * Globally consistent schema checks and composition
 * Catches breaking changes at supergraph build time before a new supergraph is published, before they're published for Gateways to use.
 
-### Gateway CD
+### Gateway CI
+
+The Gateway image and configuration can be managed using standard CI practices.
+
+For example, if using Docker images:
+
+* see [example monorepo release workflow](https://github.com/apollographql/supergraph-demo/blob/main/.github/workflows/release.yml)
+* bumps package versions in this `source repo`
+* build & push Gateway docker images to DockerHub
+
+### Gateway Deployment
 
 The default configuration for the Gateway is to update in place by pulling new supergraph schema versions as they're published to the Apollo Uplink. Gateways in the fleet poll the Uplink every 10 seconds by default, so there will be a fast rolling upgrade as Gateways check the Uplink, without the need to restart the Gateway.
 
-Update in place is useful for any long-lived Gateway instance where an immediate update of the Gateway instance's supergraph schema is desired. This is useful for long-lived VMs, Kubernetes `Deployments`, or even Serverless functions that may be cached outside of operator control.
+Update in place is useful for any long-lived Gateway instance where an immediate update of the Gateway instance's supergraph schema is desired. 
+
+Update-in-place with Managed Federation is useful for:
+* long-lived VMs
+* Kubernetes `Deployments`
+* Serverless functions that may be cached outside of operator control.
 
 [Configure the Gateways in each fleet](https://www.apollographql.com/docs/federation/managed-federation/setup/#3-modify-the-gateway-if-necessary) `dev`, `staging`, `prod` to:
 
 * pull supergraph schema from their respective graph variants, via the [Apollo Uplink](https://www.apollographql.com/docs/federation/quickstart-pt-2/#managed-federation-basics).
 * provide [usage reporting](https://www.apollographql.com/docs/apollo-server/api/plugin/usage-reporting/#gatsby-focus-wrapper) data for operation checks.
 
-### Gateway Custom CD
+### Custom Gateway Deployments
 
 You can do custom CD with the following hooks and the `rover` CLI:
 
@@ -478,7 +559,9 @@ You can do custom CD with the following hooks and the `rover` CLI:
 
 See [Kubernetes-native GraphOps](https://github.com/apollographql/supergraph-demo-k8s-graph-ops) to learn more about using custom CD with Kubernetes and GitOps.
 
-## Deploying to Kubernetes
+## Deployment Examples
+
+### Kubernetes with Supergraph ConfigMap
 
 You'll need the latest versions of:
 
@@ -700,32 +783,9 @@ ingress.networking.k8s.io "graphql-ingress" deleted
 Deleting cluster "kind" ...
 ```
 
-## Kubernetes-native GraphOps
-
-Large-scale graph operators use Kubernetes to run their Graph Router and Subgraph Services, with continuous app and service delivery. Kubernetes provides a mature control-plane for deploying and operating your graph using the container images produced by this `source repo` -- which propagates new docker image versions to the [supergraph-demo-k8s-graph-ops](https://github.com/apollographql/supergraph-demo-k8s-graph-ops) `config repo`, with `kustomize` configs to deploy to Kubernetes for `dev`, `stage`, and `prod` environments.
-
-## Open Telemetry
-
-```
-make docker-up-otel-collector
-
-make smoke
-```
-
-browse to [http://localhost:9411/](http://localhost:9411/)
-
-![opentelemetry](docs/media/opentelemetry.png)
-
-More info:
-
-* Docker compose file: [docker-compose.otel-collector.yml](docker-compose.otel-collector.yml)
-* Helper library: [supergraph-demo-opentelemetry](https://github.com/prasek/supergraph-demo-opentelemetry)
-  * See usage in:
-    * [router/router.js](router/router.js)
-    * [subgraphs/products/products.js](subgraphs/products/products.js)
-* Docs: [Open Telemetry for Apollo Federation](https://www.apollographql.com/docs/federation/opentelemetry/)
-
 ## Serverless
+
+See [serverless.yml](serverless/serverless.yml)
 
 ```
 make demo-serverless
@@ -784,7 +844,6 @@ Removing network supergraph-demo_default
 
 Apollo tools and services help you develop, maintain, operate, and scale your data graph.
 
-Learn more:
-
 * [Shipping faster with managed federation and schema checks](https://www.apollographql.com/docs/studio/)
-* [Kubernetes-native GraphOps](https://github.com/apollographql/supergraph-demo-k8s-graph-ops)
+
+* [Kubernetes-native GraphOps](https://github.com/apollographql/supergraph-demo-k8s-graph-ops) 
