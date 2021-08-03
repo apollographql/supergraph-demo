@@ -24,3 +24,9 @@ updates:
       interval: daily
     assignees:
       - prasek
+  - package-ecosystem: npm
+    directory: /serverless
+    schedule:
+      interval: daily
+    assignees:
+      - prasek

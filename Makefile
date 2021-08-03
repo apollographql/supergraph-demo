@@ -5,16 +5,16 @@ default: demo
 ci: supergraph docker-build-force docker-up smoke docker-down
 
 .PHONY: demo
-demo: supergraph docker-up query docker-down
+demo: supergraph docker-up smoke docker-down
 
 .PHONY: demo-managed
-demo-managed: publish docker-up-managed query docker-down
+demo-managed: publish docker-up-managed smoke docker-down
 
 .PHONY: demo-k8s
 demo-k8s: k8s-up k8s-smoke k8s-down
 
 .PHONY: demo-serverless
-demo-serverless: supergraph-serverless docker-up-serverless query docker-down-serverless
+demo-serverless: supergraph-serverless docker-up-serverless smoke docker-down-serverless
 
 .PHONY: docker-up
 docker-up:
