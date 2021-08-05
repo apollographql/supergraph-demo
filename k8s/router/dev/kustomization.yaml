@@ -10,4 +10,4 @@ resources:
 images:
 - name: prasek/supergraph-router:latest
   newName: prasek/supergraph-router
-  newTag: 1.1.14
+  newTag: 1.1.15
