@@ -8,7 +8,7 @@ ci: supergraph docker-build-force docker-up smoke docker-down
 demo: supergraph docker-up smoke docker-down
 
 .PHONY: demo-managed
-demo-managed: publish docker-up-managed smoke docker-down
+demo-managed: publish take-five docker-up-managed smoke docker-down
 
 .PHONY: demo-k8s
 demo-k8s: k8s-up k8s-smoke k8s-down
@@ -185,3 +185,8 @@ act-subgraph-deploy-publish:
 .PHONY: docker-prune
 docker-prune:
 	.scripts/docker-prune.sh
+
+.PHONY: take-five
+take-five:
+	@echo waiting for robots to finish work ...
+	@sleep 5
