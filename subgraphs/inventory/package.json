@@ -7,7 +7,7 @@
     "start": "node inventory.js"
   },
   "dependencies": {
-    "@apollo/federation": "0.28.0",
+    "@apollo/federation": "0.31.0",
     "apollo-server": "3.1.2",
     "supergraph-demo-opentelemetry": "0.0.3",
     "graphql": "15.5.1"
