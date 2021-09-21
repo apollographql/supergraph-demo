@@ -222,6 +222,36 @@ browse to [http://localhost:9411/](http://localhost:9411/)
 make docker-down-otel-collector
 ```
 
+#### Send Open Telemetry Traces to Honeycomb
+
+You can send Open Telemetry from the Gateway to Honeycomb with the following [collector-config.yml](opentelemetry/collector-config.yml):
+
+```
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+        cors_allowed_origins:
+          - http://*
+          - https://*
+
+exporters:
+  otlp:
+    endpoint: "api.honeycomb.io:443"
+    headers:
+      "x-honeycomb-team": "your-api-key"
+      "x-honeycomb-dataset": "your-dataset-name"
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [otlp]
+```
+
+![honeycomb](docs/media/honeycomb.png)
+
 #### Learn More
 
 * Docs: [Open Telemetry for Apollo Federation](https://www.apollographql.com/docs/federation/opentelemetry/)
