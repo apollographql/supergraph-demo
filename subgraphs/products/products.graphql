@@ -1,4 +1,4 @@
-directive @tag(name: String!) repeatable on FIELD_DEFINITION
+directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION
 
 type Product @key(fields: "id") @key(fields: "sku package") @key(fields: "sku variation { id }"){
   id: ID! @tag(name: "hi from products")
