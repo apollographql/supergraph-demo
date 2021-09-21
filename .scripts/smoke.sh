@@ -7,6 +7,7 @@ TESTS=(1 2)
 # TEST 1
 # --------------------------------------------------------------------
 DESCR_1="allProducts with delivery"
+OPNAME_1="allProdDelivery"
 read -r -d '' QUERY_1 <<"EOF"
 {
   allProducts {
@@ -32,6 +33,7 @@ EOF
 # TEST 2
 # --------------------------------------------------------------------
 DESCR_2="allProducts with totalProductsCreated"
+OPNAME_2="allProdCreated"
 read -r -d '' QUERY_2 <<"EOF"
 {
   allProducts {
@@ -55,6 +57,7 @@ EOF
 # TEST 3 - DISABLED FOR NOW - UNTIL WE ALLOW @inaccessible in subgraphs
 # --------------------------------------------------------------------
 DESCR_3="weight: Float @inaccessible should return error"
+OPNAME_3="inaccessibleError"
 read -r -d '' QUERY_3 <<"EOF"
 {
   allProducts {
@@ -88,18 +91,20 @@ for test in ${TESTS[@]}; do
   query_var="QUERY_$test"
   exp_var="EXP_$test"
   op_var="OP_$test"
+  opname_var="OPNAME_$test"
 
   DESCR="${!descr_var}"
   QUERY=$(echo "${!query_var}" | awk -v ORS= -v OFS= '{$1=$1}1')
   EXP="${!exp_var}"
   OP="${!op_var}"
+  OPNAME="${!opname_var}"
 
   echo ""
   echo "=============================================================="
   echo "TEST $test: $DESCR"
   echo "=============================================================="
 
-  ACT=$(set -x; curl -X POST -H 'Content-Type: application/json' --data '{ "query": "'"${QUERY}"'" }' http://localhost:$PORT/ 2>/dev/null)
+  ACT=$(set -x; curl -X POST -H 'Content-Type: application/json' --data '{ "query": "'"query $OPNAME${QUERY}"'", "operationName": "'"$OPNAME"'" }' http://localhost:$PORT/ 2>/dev/null)
 
   OK=0
   if [ "$OP" == "equals" ]; then
