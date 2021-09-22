@@ -1,5 +1,15 @@
 {
   "extends": [
-    "config:base"
+    ":dependencyDashboard",
+    ":semanticPrefixFixDepsChoreOthers",
+    ":ignoreModulesAndTests",
+    ":autodetectPinVersions",
+    ":prHourlyLimitNone",
+    ":prConcurrentLimit20",
+    ":separateMajorReleases",
+    "schedule:nonOfficeHours",
+    "group:monorepos",
+    "group:recommended",
+    "workarounds:all"
   ]
 }
