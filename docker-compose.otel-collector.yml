@@ -31,7 +31,7 @@ services:
       - APOLLO_OTEL_EXPORTER_HOST=collector
   collector:
     container_name: collector
-    image: otel/opentelemetry-collector:0.27.0
+    image: otel/opentelemetry-collector:0.34.0
     command: ["--config=/conf/collector-config.yml"]
     volumes:
       - ./opentelemetry/collector-config.yml:/conf/collector-config.yml
@@ -48,7 +48,7 @@ services:
       - "9411:9411"
   prometheus:
     container_name: prometheus
-    image: prom/prometheus:v2.27.1
+    image: prom/prometheus:v2.30.0
     volumes:
       - ./opentelemetry/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
