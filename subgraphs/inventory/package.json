@@ -1,6 +1,6 @@
 {
   "name": "subgraph-inventory",
-  "version": "1.1.20",
+  "version": "1.1.21",
   "description": "",
   "main": "inventory.js",
   "scripts": {
