@@ -6,8 +6,8 @@
     "dev": "serverless offline"
   },
   "dependencies": {
-    "@apollo/gateway": "0.42.3",
-    "apollo-server-lambda": "3.4.0",
+    "@apollo/gateway": "0.43.1",
+    "apollo-server-lambda": "3.5.0",
     "graphql": "15.6.0"
   },
   "devDependencies": {
