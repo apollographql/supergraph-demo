@@ -5,10 +5,10 @@ resources:
 images:
 - name: prasek/subgraph-inventory:latest
   newName: prasek/subgraph-inventory
-  newTag: 1.1.23
+  newTag: 1.1.24
 - name: prasek/subgraph-products:latest
   newName: prasek/subgraph-products
-  newTag: 1.1.19
+  newTag: 1.1.20
 - name: prasek/subgraph-users:latest
   newName: prasek/subgraph-users
   newTag: 1.1.22
