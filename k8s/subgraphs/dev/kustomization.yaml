@@ -5,13 +5,13 @@ resources:
 images:
 - name: prasek/subgraph-inventory:latest
   newName: prasek/subgraph-inventory
-  newTag: 1.1.26
+  newTag: 1.1.27
 - name: prasek/subgraph-products:latest
   newName: prasek/subgraph-products
-  newTag: 1.1.22
+  newTag: 1.1.23
 - name: prasek/subgraph-users:latest
   newName: prasek/subgraph-users
-  newTag: 1.1.24
+  newTag: 1.1.25
 - name: prasek/supergraph-serverless:latest
   newName: prasek/supergraph-serverless
-  newTag: 1.0.11
+  newTag: 1.0.12
