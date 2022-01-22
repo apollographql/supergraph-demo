@@ -4,6 +4,9 @@ default: demo
 .PHONY: ci
 ci: supergraph docker-build-force docker-up smoke docker-down
 
+.PHONY: ci-router
+ci-router: supergraph docker-build-force docker-up-local-router smoke docker-down-router
+
 .PHONY: demo
 demo: supergraph docker-up smoke docker-down
 
@@ -20,7 +23,7 @@ demo-serverless: supergraph-serverless docker-up-serverless smoke docker-down-se
 docker-up:
 	docker-compose up -d
 	@sleep 2
-	@docker logs router
+	@docker logs apollo-gateway
 
 .PHONY: docker-build
 docker-build:
@@ -30,11 +33,24 @@ docker-build:
 docker-build-force:
 	docker-compose build --no-cache --pull --parallel --progress plain
 
+.PHONY: docker-build-router
+docker-build-router:
+	@docker build -t supergraph-demo_apollo-router router/. --no-cache
+
 .PHONY: docker-up-managed
 docker-up-managed:
 	docker-compose -f docker-compose.managed.yml up -d
 	@sleep 2
-	@docker logs router
+	@docker logs apollo-gateway
+
+.PHONY: demo-local-router
+demo-local-router: supergraph docker-up-local-router smoke docker-down-router
+
+.PHONY: docker-up-local-router
+docker-up-local-router:
+	docker-compose -f docker-compose.router.yml up -d
+	@sleep 2
+	@docker logs apollo-router
 
 .PHONY: query
 query:
@@ -46,7 +62,11 @@ smoke:
 
 .PHONY: docker-down
 docker-down:
-	docker-compose down
+	docker-compose down --remove-orphans
+
+.PHONY: docker-down-router
+docker-down-router:
+	docker-compose -f docker-compose.router.yml down --remove-orphans
 
 .PHONY: supergraph
 supergraph: config compose
@@ -161,6 +181,10 @@ act: act-ci-local
 .PHONY: act-ci-local
 act-ci-local:
 	act -P $(ubuntu-latest) -W .github/workflows/main.yml --detect-event
+
+.PHONY: act-ci-local-router
+act-ci-local-router:
+	act -P $(ubuntu-latest) -W .github/workflows/main-router.yml --detect-event
 
 .PHONY: act-ci-managed
 act-ci-managed:

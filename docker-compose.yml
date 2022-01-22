@@ -1,8 +1,8 @@
 version: '3'
 services:
-  router:
-    container_name: router
-    build: ./router
+  apollo-gateway:
+    container_name: apollo-gateway
+    build: ./gateway
     environment:
       - APOLLO_SCHEMA_CONFIG_EMBEDDED=true
     volumes:
