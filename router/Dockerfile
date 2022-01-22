@@ -1,11 +1,13 @@
-from node:16-alpine
+from amd64/ubuntu:latest
 
 WORKDIR /usr/src/app
+RUN apt-get update && apt-get install -y \ 
+    libssl-dev \
+    curl \
+    jq
 
-COPY package.json .
+COPY install.sh .
+COPY run.sh .
+RUN ./install.sh
 
-RUN npm install
-
-COPY router.js .
-
-CMD [ "node", "router.js" ]
+CMD [ "/usr/src/app/run.sh" ]

@@ -25,6 +25,12 @@ Contents:
 * [Deployment Examples](#deployment-examples)
   * [Kubernetes with Supergraph ConfigMap](#kubernetes-with-supergraph-configmap)
   * [Serverless](#serverless)
+* [Apollo Router](#apollo-router)
+* [Learn More](#learn-more)
+
+See also:
+- [apollographql/supergraph-demo-fed2](https://github.com/apollographql/supergraph-demo-fed2/blob/main/README.md)
+- [apollographql/supergraph-demo-k8s-graph-ops](https://github.com/apollographql/supergraph-demo-k8s-graph-ops)
 
 ## Welcome
 
@@ -96,7 +102,7 @@ and then runs:
 ```
 docker-compose up -d
 
-Creating router    ... done
+Creating apollo-gateway ... done
 Creating inventory ... done
 Creating users     ... done
 Creating products  ... done
@@ -258,7 +264,7 @@ service:
 * Docker compose file: [docker-compose.otel-collector.yml](docker-compose.otel-collector.yml)
 * Helper library: [supergraph-demo-opentelemetry](https://github.com/prasek/supergraph-demo-opentelemetry)
   * See usage in:
-    * [router/router.js](router/router.js)
+    * [gateway/gateway.js](gateway/gateway.js)
     * [subgraphs/products/products.js](subgraphs/products/products.js)
 
 ## Apollo Studio
@@ -339,16 +345,16 @@ Viewing the `Federated` graph in Apollo Studio we can see the supergraph and the
 
 #### Run the Graph Router and Subgraph Containers
 
-The graph-router and subgraph services will be started by `make demo-managed` next.
+The graph router and subgraph services will be started by `make demo-managed` next.
 
 using `docker-compose.managed.yml`:
 
 ```yaml
 version: '3'
 services:
-  router:
-    container_name: router
-    build: ./router
+  apollo-gateway:
+    container_name: apollo-gateway
+    build: ./gateway
     environment:
       - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=https://uplink.api.apollographql.com/
     env_file: # created with: make graph-api-env
@@ -375,7 +381,7 @@ which shows:
 ```
 docker-compose -f docker-compose.managed.yml up -d
 Creating network "supergraph-demo_default" with the default driver
-Creating graph-router ... done
+Creating apollo-gateway ... done
 
 Starting Apollo Gateway in managed mode ...
 Apollo usage reporting starting! See your graph at https://studio.apollographql.com/graph/supergraph-router@dev/
@@ -408,7 +414,7 @@ Apollo Schema Checks help ensure subgraph changes don't break the federated grap
 
 #### The Graph Router will Update In Place
 
-With Managed Federation you can leave graph-router running and it will
+With Managed Federation you can leave the graph router running and it will
 update automatically when subgraph changes are published and they successfully
 compose and pass all schema checks in Apollo Studio:
 
@@ -869,6 +875,64 @@ Stopping serverless ... done
 Removing serverless ... done
 Removing network supergraph-demo_default
 ```
+
+## Apollo Router
+
+[The Apollo Router](https://www.apollographql.com/blog/announcement/backend/apollo-router-our-graphql-federation-runtime-in-rust) is our next-generation GraphQL Federation runtime written in Rust, and it is fast.
+
+As a Graph Router, the Apollo Router plays the same role as the Apollo Gateway. The same subgraph schemas and composed supergraph schema can be used in both the Router and the Gateway.
+
+This demo shows using the Apollo Router with a Federation 1 supergraph schema, composed using the Fed 1 `rover supergraph compose` command. To see the Router working with Federation 2 composition, checkout the Apollo Router section of [apollographql/supergraph-demo-fed2](https://github.com/apollographql/supergraph-demo-fed2/blob/main/README.md#apollo-router).
+
+[Early benchmarks](https://www.apollographql.com/blog/announcement/backend/apollo-router-our-graphql-federation-runtime-in-rust) show that the Router adds less than 10ms of latency to each operation, and it can process 8x the load of the JavaScript Apollo Gateway.
+
+To get started with the Router:
+
+```
+make demo-local-router
+```
+
+this uses a simple [docker-compose.router.yml](docker-compose.router.yml) file:
+```yaml
+version: '3'
+services:
+  apollo-router:
+    container_name: apollo-router
+    build: ./router
+    volumes:
+      - ./supergraph.graphql:/etc/config/supergraph.graphql
+      - ./router/configuration.yaml:/etc/config/configuration.yaml
+    ports:
+      - "4000:4000"
+  products:
+    container_name: products
+    build: ./subgraphs/products
+  inventory:
+    container_name: inventory
+    build: ./subgraphs/inventory
+  users:
+    container_name: users
+    build: ./subgraphs/users
+```
+
+which uses the following [Dockerfile](router/Dockerfile)
+```
+from ubuntu
+
+WORKDIR /usr/src/app
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    curl \
+    jq
+
+COPY install.sh .
+COPY run.sh .
+RUN ./install.sh
+
+CMD [ "/usr/src/app/run.sh" ]
+```
+
+see [./router](router) for more details.
 
 ## Learn More
 
