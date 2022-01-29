@@ -23,6 +23,11 @@ type DeliveryEstimates {
   fastestDelivery: String
 }
 
+type Panda {
+  favoriteFood: String
+  name: ID!
+}
+
 type Product
   @join__owner(graph: PRODUCTS)
   @join__type(graph: PRODUCTS, key: "id")
@@ -49,7 +54,9 @@ type ProductVariation {
 }
 
 type Query {
+  allPandas: [Panda] @join__field(graph: PANDAS)
   allProducts: [Product] @join__field(graph: PRODUCTS)
+  panda(name: ID!): Panda @join__field(graph: PANDAS)
   product(id: ID!): Product @join__field(graph: PRODUCTS)
 }
 
@@ -79,6 +86,7 @@ scalar join__FieldSet
 
 enum join__Graph {
   INVENTORY @join__graph(name: "inventory" url: "http://inventory:4000/graphql")
+  PANDAS @join__graph(name: "pandas" url: "http://pandas:4000/graphql")
   PRODUCTS @join__graph(name: "products" url: "http://products:4000/graphql")
   USERS @join__graph(name: "users" url: "http://users:4000/graphql")
 }
