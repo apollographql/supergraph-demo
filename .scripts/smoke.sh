@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PORT="${1:-4000}"
-TESTS=(1 2)
+TESTS=(1 2 4)
 
 # --------------------------------------------------------------------
 # TEST 1
@@ -76,6 +76,37 @@ read -r -d '' EXP_3 <<"EOF"
 {"errors":[{"message":"Cannot query field \"weight\" on type \"ProductDimension\"
 EOF
 
+# --------------------------------------------------------------------
+# TEST 4
+# --------------------------------------------------------------------
+DESCR_4="exampleQuery with pandas"
+OPNAME_4="exampleQuery"
+read -r -d '' QUERY_4 <<"EOF"
+{
+ allProducts {
+   id,
+   sku,
+   dimensions {
+     size,
+     weight
+   }
+   delivery {
+     estimatedDelivery,
+     fastestDelivery
+   }
+ }
+ allPandas {
+   name,
+   favoriteFood
+ }
+}
+EOF
+
+OP_4=equals
+
+read -r -d '' EXP_4 <<"EOF"
+{"data":{"allProducts":[{"id":"apollo-federation","sku":"federation","dimensions":{"size":"1","weight":1},"delivery":{"estimatedDelivery":"6/25/2021","fastestDelivery":"6/24/2021"}},{"id":"apollo-studio","sku":"studio","dimensions":{"size":"1","weight":1},"delivery":{"estimatedDelivery":"6/25/2021","fastestDelivery":"6/24/2021"}}],"allPandas":[{"name":"Basi","favoriteFood":"bamboo leaves"},{"name":"Yun","favoriteFood":"apple"}]}}
+EOF
 
 set -e
 

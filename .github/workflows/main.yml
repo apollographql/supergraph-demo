@@ -1,4 +1,4 @@
-name: CI
+name: CI-gateway
 on:
   pull_request:
     branches: [ main ]
