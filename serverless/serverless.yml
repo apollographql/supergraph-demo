@@ -1,6 +1,6 @@
 service: supergraph-serverless
 
-frameworkVersion: '2'
+frameworkVersion: '3'
 
 plugins:
   - serverless-offline
@@ -37,6 +37,13 @@ functions:
     events:
       - http:
           path: users
+          method: ANY
+          cors: true
+  pandas:
+    handler: subgraphs/pandas.handler
+    events:
+      - http:
+          path: pandas
           method: ANY
           cors: true
 

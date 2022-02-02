@@ -1,34 +1,31 @@
 schema
-  @core(feature: "https://specs.apollo.dev/core/v0.1"),
-  @core(feature: "https://specs.apollo.dev/join/v0.1"),
+  @core(feature: "https://specs.apollo.dev/core/v0.2"),
+  @core(feature: "https://specs.apollo.dev/join/v0.1", for: EXECUTION),
   @core(feature: "https://specs.apollo.dev/tag/v0.1")
 {
   query: Query
 }
 
-directive @core(feature: String!) repeatable on SCHEMA
+directive @core(as: String, feature: String!, for: core__Purpose) repeatable on SCHEMA
 
-directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
-
-directive @join__type(graph: join__Graph!, key: join__FieldSet) repeatable on OBJECT | INTERFACE
-
-directive @join__owner(graph: join__Graph!) on OBJECT | INTERFACE
+directive @join__field(graph: join__Graph, provides: join__FieldSet, requires: join__FieldSet) on FIELD_DEFINITION
 
 directive @join__graph(name: String!, url: String!) on ENUM_VALUE
 
-directive @tag(name: String!) repeatable on FIELD_DEFINITION
+directive @join__owner(graph: join__Graph!) on INTERFACE | OBJECT
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet) repeatable on INTERFACE | OBJECT
+
+directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION
 
 type DeliveryEstimates {
   estimatedDelivery: String
   fastestDelivery: String
 }
 
-scalar join__FieldSet
-
-enum join__Graph {
-  INVENTORY @join__graph(name: "inventory" url: "http://localhost:4000/inventory")
-  PRODUCTS @join__graph(name: "products" url: "http://localhost:4000/products")
-  USERS @join__graph(name: "users" url: "http://localhost:4000/users")
+type Panda {
+  favoriteFood: String
+  name: ID!
 }
 
 type Product
@@ -41,7 +38,7 @@ type Product
   createdBy: User @join__field(graph: PRODUCTS, provides: "totalProductsCreated")
   delivery(zip: String): DeliveryEstimates @join__field(graph: INVENTORY, requires: "dimensions{size weight}")
   dimensions: ProductDimension @join__field(graph: PRODUCTS)
-  id: ID! @join__field(graph: PRODUCTS) @tag(name: "hi from products") @tag(name: "hi from inventory")
+  id: ID! @join__field(graph: PRODUCTS) @tag(name: "hi from inventory") @tag(name: "hi from products")
   package: String @join__field(graph: PRODUCTS)
   sku: String @join__field(graph: PRODUCTS) @tag(name: "hi from products")
   variation: ProductVariation @join__field(graph: PRODUCTS)
@@ -57,7 +54,9 @@ type ProductVariation {
 }
 
 type Query {
+  allPandas: [Panda] @join__field(graph: PANDAS)
   allProducts: [Product] @join__field(graph: PRODUCTS)
+  panda(name: ID!): Panda @join__field(graph: PANDAS)
   product(id: ID!): Product @join__field(graph: PRODUCTS)
 }
 
@@ -69,4 +68,25 @@ type User
   email: ID! @join__field(graph: USERS)
   name: String @join__field(graph: USERS)
   totalProductsCreated: Int @join__field(graph: USERS)
+}
+
+enum core__Purpose {
+  """
+  `EXECUTION` features provide metadata necessary to for operation execution.
+  """
+  EXECUTION
+
+  """
+  `SECURITY` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+}
+
+scalar join__FieldSet
+
+enum join__Graph {
+  INVENTORY @join__graph(name: "inventory" url: "http://localhost:4000/inventory")
+  PANDAS @join__graph(name: "pandas" url: "http://localhost:4000/pandas")
+  PRODUCTS @join__graph(name: "products" url: "http://localhost:4000/products")
+  USERS @join__graph(name: "users" url: "http://localhost:4000/users")
 }

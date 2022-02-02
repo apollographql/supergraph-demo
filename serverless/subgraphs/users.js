@@ -1,5 +1,5 @@
 const { ApolloServer, gql } = require("apollo-server-lambda");
-const { buildFederatedSchema } = require('@apollo/federation');
+const { buildSubgraphSchema } = require('@apollo/subgraph');
 const { readFileSync } = require('fs');
 const { resolve } = require('path');
 
@@ -16,5 +16,5 @@ const resolvers = {
     }
 }
 
-const server = new ApolloServer({ schema: buildFederatedSchema({ typeDefs, resolvers }) });
+const server = new ApolloServer({ schema: buildSubgraphSchema({ typeDefs, resolvers }) });
 exports.handler = server.createHandler();

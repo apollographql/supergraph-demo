@@ -8,10 +8,11 @@
   "dependencies": {
     "@apollo/gateway": "0.46.0",
     "apollo-server-lambda": "3.6.2",
+    "@apollo/subgraph": "0.1.5",
     "graphql": "15.8.0"
   },
   "devDependencies": {
-    "serverless": "2.72.2",
+    "serverless": "3.0.1",
     "serverless-offline": "8.4.0"
   }
 }
