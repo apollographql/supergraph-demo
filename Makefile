@@ -37,6 +37,10 @@ docker-build-force:
 docker-build-router:
 	@docker build -t supergraph-demo_apollo-router router/. --no-cache
 
+.PHONY: docker-build-serverless
+docker-build-serverless:
+	docker-compose -f docker-compose.serverless.yml build --no-cache
+
 .PHONY: docker-up-managed
 docker-up-managed:
 	docker-compose -f docker-compose.managed.yml up -d
@@ -185,6 +189,10 @@ act-ci-local:
 .PHONY: act-ci-local-router
 act-ci-local-router:
 	act -P $(ubuntu-latest) -W .github/workflows/main-router.yml --detect-event
+
+.PHONY: act-ci-local-serverless
+act-ci-local-serverless:
+	act -P $(ubuntu-latest) -W .github/workflows/main-serverless.yml --detect-event
 
 .PHONY: act-ci-managed
 act-ci-managed:
