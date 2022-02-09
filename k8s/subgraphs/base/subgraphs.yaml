@@ -99,3 +99,37 @@ spec:
     - protocol: TCP
       port: 4000
       targetPort: 4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pandas
+  labels:
+    app: subgraph-pandas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subgraph-pandas
+  template:
+    metadata:
+      labels:
+        app: subgraph-pandas
+    spec:
+      containers:
+      - name: pandas
+        image: prasek/subgraph-pandas:latest
+        ports:
+        - containerPort: 4000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pandas
+spec:
+  selector:
+    app: subgraph-pandas
+  ports:
+    - protocol: TCP
+      port: 4000
+      targetPort: 4000
