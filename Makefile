@@ -229,3 +229,10 @@ docker-prune:
 take-five:
 	@echo waiting for robots to finish work ...
 	@sleep 5
+
+.PHONY: copy-local-otel-tar
+copy-local-otel-tar:
+	cp ../supergraph-demo-opentelemetry/dist/js/supergraph-demo-opentelemetry-v0.0.0.tgz ./gateway/
+	cp ../supergraph-demo-opentelemetry/dist/js/supergraph-demo-opentelemetry-v0.0.0.tgz ./subgraphs/products
+	cp ../supergraph-demo-opentelemetry/dist/js/supergraph-demo-opentelemetry-v0.0.0.tgz ./subgraphs/inventory
+	cp ../supergraph-demo-opentelemetry/dist/js/supergraph-demo-opentelemetry-v0.0.0.tgz ./subgraphs/users
