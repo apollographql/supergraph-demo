@@ -137,7 +137,7 @@ supergraph-serverless:
 .PHONY: docker-up-serverless
 docker-up-serverless:
 	docker-compose -f docker-compose.serverless.yml up -d
-	@sleep 4
+	@sleep 6
 	docker-compose -f docker-compose.serverless.yml logs
 
 .PHONY: docker-down-serverless
