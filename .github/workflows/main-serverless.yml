@@ -58,7 +58,7 @@ jobs:
       - name: docker-compose up -d
         run: |
           ( set -x; docker-compose -f docker-compose.serverless.yml  up -d )
-          sleep 3
+          sleep 6
           docker-compose -f docker-compose.serverless.yml logs
       - name: smoke test
         run: .scripts/smoke.sh 4000
