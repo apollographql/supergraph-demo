@@ -18,7 +18,7 @@ jobs:
 
     name: ${{ matrix.subgraph }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: install rover
         env:
           ROVER_VERSION: ${{ matrix.rover-version }}
