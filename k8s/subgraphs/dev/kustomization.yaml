@@ -17,4 +17,4 @@ images:
   newTag: 1.1.36
 - name: prasek/supergraph-serverless:latest
   newName: prasek/supergraph-serverless
-  newTag: 1.0.17
+  newTag: 1.0.18
