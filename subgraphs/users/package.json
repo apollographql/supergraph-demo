@@ -1,6 +1,6 @@
 {
   "name": "subgraph-users",
-  "version": "1.1.35",
+  "version": "1.1.36",
   "description": "",
   "main": "users.js",
   "scripts": {
