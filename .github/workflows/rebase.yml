@@ -46,7 +46,7 @@ jobs:
           token: ${{ secrets.PAT }}
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
       - name: Automatic Rebase
-        uses: cirrus-actions/rebase@1.5
+        uses: cirrus-actions/rebase@1.6
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
 
