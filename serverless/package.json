@@ -12,7 +12,7 @@
     "graphql": "15.8.0"
   },
   "devDependencies": {
-    "serverless": "3.15.0",
+    "serverless": "3.15.2",
     "serverless-offline": "8.5.0"
   }
 }
