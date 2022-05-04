@@ -7,7 +7,7 @@
     "start": "node router.js"
   },
   "dependencies": {
-    "@apollo/gateway": "0.50.2",
+    "@apollo/gateway": "0.51.0",
     "apollo-server": "3.6.7",
     "supergraph-demo-opentelemetry": "0.2.3",
     "graphql": "15.8.0"
