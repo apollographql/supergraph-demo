@@ -1,6 +1,6 @@
 {
   "name": "supergraph-serverless",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "license": "MIT",
   "scripts": {
     "dev": "serverless offline"
