@@ -3,6 +3,9 @@
 ![smoke test](https://github.com/apollographql/supergraph-demo/actions/workflows/main.yml/badge.svg)
 [![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com)
 
+> 📣 [Apollo Federation 2 is generally available](https://www.apollographql.com/blog/announcement/backend/apollo-federation-2-is-now-generally-available/)!
+View the [Federation 2 demo](https://github.com/apollographql/supergraph-demo-fed2/blob/main/README.md)!
+
 Moving from dynamic composition to static composition with supergraphs.
 
 Contents:
