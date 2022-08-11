@@ -25,7 +25,7 @@ jobs:
       - name: Create or update comment
         id: comment
         if: env.OK == 'true'
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: ${{ github.event.issue.number }}
           body: Rebasing ...
@@ -58,7 +58,7 @@ jobs:
     steps:
       - name: Create or update comment
         id: comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: ${{ github.event.issue.number }}
           comment-id: ${{ needs.verify.outputs.comment-id }}
@@ -74,7 +74,7 @@ jobs:
     if: failure() && needs.verify.outputs.ok == 'true'
     steps:
       - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: ${{ github.event.issue.number }}
           comment-id: ${{ needs.verify.outputs.comment-id }}
