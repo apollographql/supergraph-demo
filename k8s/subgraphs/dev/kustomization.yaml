@@ -5,16 +5,16 @@ resources:
 images:
 - name: prasek/subgraph-inventory:latest
   newName: prasek/subgraph-inventory
-  newTag: 1.1.46
+  newTag: 1.1.47
 - name: prasek/subgraph-pandas:latest
   newName: prasek/subgraph-pandas
-  newTag: 1.1.36
+  newTag: 1.1.37
 - name: prasek/subgraph-products:latest
   newName: prasek/subgraph-products
-  newTag: 1.1.42
+  newTag: 1.1.43
 - name: prasek/subgraph-users:latest
   newName: prasek/subgraph-users
-  newTag: 1.1.44
+  newTag: 1.1.45
 - name: prasek/supergraph-serverless:latest
   newName: prasek/supergraph-serverless
-  newTag: 1.0.26
+  newTag: 1.0.27
