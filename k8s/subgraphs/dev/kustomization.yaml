@@ -5,7 +5,7 @@ resources:
 images:
 - name: prasek/subgraph-inventory:latest
   newName: prasek/subgraph-inventory
-  newTag: 1.1.47
+  newTag: 1.1.48
 - name: prasek/subgraph-pandas:latest
   newName: prasek/subgraph-pandas
   newTag: 1.1.37
