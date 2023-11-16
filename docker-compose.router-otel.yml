@@ -2,7 +2,7 @@ version: '3'
 services:
   apollo-router:
     container_name: apollo-router
-    image: ghcr.io/apollographql/router:v1.33.0
+    image: ghcr.io/apollographql/router:v1.33.2
     volumes:
       - ./supergraph.graphql:/dist/schema/supergraph.graphql
       - ./router.yaml:/dist/config/router.yaml
@@ -43,7 +43,7 @@ services:
       - "/etc/localtime:/etc/localtime:ro"
   collector:
     container_name: collector
-    image: otel/opentelemetry-collector:0.87.0
+    image: otel/opentelemetry-collector:0.88.0
     command: ["--config=/conf/collector-config.yml"]
     volumes:
       - ./opentelemetry/collector-config.yml:/conf/collector-config.yml

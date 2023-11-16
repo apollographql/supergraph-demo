@@ -7,12 +7,12 @@
   },
   "dependencies": {
     "@apollo/gateway": "0.54.1",
-    "apollo-server-lambda": "3.12.1",
+    "apollo-server-lambda": "3.13.0",
     "@apollo/subgraph": "0.6.1",
     "graphql": "15.8.0"
   },
   "devDependencies": {
-    "serverless": "3.35.2",
+    "serverless": "3.36.0",
     "serverless-offline": "8.8.1"
   }
 }
