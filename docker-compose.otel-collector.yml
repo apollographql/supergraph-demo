@@ -38,7 +38,7 @@ services:
     build: ./subgraphs/pandas
   collector:
     container_name: collector
-    image: otel/opentelemetry-collector:0.88.0
+    image: otel/opentelemetry-collector:0.90.1
     command: ["--config=/conf/collector-config.yml"]
     volumes:
       - ./opentelemetry/collector-config.yml:/conf/collector-config.yml
@@ -56,7 +56,7 @@ services:
       - "9411:9411"
   prometheus:
     container_name: prometheus
-    image: prom/prometheus:v2.47.2
+    image: prom/prometheus:v2.48.0
     volumes:
       - ./opentelemetry/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
