@@ -57,7 +57,7 @@ jobs:
           echo ---------------------------------------------------------------
       - name: unpublish
         run: |
-          make unpublish
+          make unpublish || true
       - name: publish
         run: |
           make publish
