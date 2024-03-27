@@ -6,9 +6,9 @@
     "dev": "serverless offline"
   },
   "dependencies": {
-    "@apollo/gateway": "0.54.1",
+    "@apollo/gateway": "2.7.2",
     "apollo-server-lambda": "3.13.0",
-    "@apollo/subgraph": "0.6.1",
+    "@apollo/subgraph": "2.7.2",
     "graphql": "16.8.1"
   },
   "devDependencies": {
