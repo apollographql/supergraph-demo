@@ -29,7 +29,7 @@ jobs:
     outputs:
       count: ${{ steps.commits.outputs.count }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Info
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -73,7 +73,7 @@ jobs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       count: ${{ steps.matrix.outputs.count }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       -
         name: generate matrix
         id: matrix
@@ -157,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         name: install rover
         run: |
@@ -225,7 +225,7 @@ jobs:
           echo changes: ${{ matrix.changes }}
       -
         name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -263,7 +263,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         name: update kind
         run: |
@@ -285,7 +285,7 @@ jobs:
       PACKAGES: ${{ needs.build-matrix.outputs.packages }}
       MATRIX: ${{ needs.build-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       -
         name: Info
         run: |
@@ -371,7 +371,7 @@ jobs:
     steps:
       -
         name: checkout supergraph-demo-k8s-graph-ops
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }}
           repository: apollographql/supergraph-demo-k8s-graph-ops
