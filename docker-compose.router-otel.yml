@@ -56,7 +56,7 @@ services:
       - zipkin
   zipkin:
     container_name: zipkin
-    image: openzipkin/zipkin:3.2.1
+    image: openzipkin/zipkin:3.3.0
     ports:
       - "9411:9411"
   prometheus:
