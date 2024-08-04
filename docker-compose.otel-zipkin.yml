@@ -36,6 +36,6 @@ services:
     build: ./subgraphs/pandas
   zipkin:
     container_name: zipkin
-    image: openzipkin/zipkin:3.4.0
+    image: openzipkin/zipkin:3.4.1
     ports:
       - "9411:9411"
