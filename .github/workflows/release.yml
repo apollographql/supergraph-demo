@@ -341,7 +341,7 @@ jobs:
         if: |
           steps.cpr.outputs.pull-request-operation == 'created' ||
           steps.cpr.outputs.pull-request-operation == 'updated'
-        uses: peter-evans/enable-pull-request-automerge@v2
+        uses: peter-evans/enable-pull-request-automerge@v3
         with:
           token: ${{ secrets.PAT }}
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
@@ -401,7 +401,7 @@ jobs:
         if: |
           steps.cpr.outputs.pull-request-operation == 'created' ||
           steps.cpr.outputs.pull-request-operation == 'updated'
-        uses: peter-evans/enable-pull-request-automerge@v2
+        uses: peter-evans/enable-pull-request-automerge@v3
         with:
           token: ${{ secrets.PAT }}
           repository: apollographql/supergraph-demo-k8s-graph-ops
