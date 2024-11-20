@@ -1,27 +1,39 @@
-directive @tag(name: String!) repeatable on FIELD_DEFINITION
+type Query {
+  allProducts: [ProductItf]
+  product(id: ID!): ProductItf
+}
 
-type Product @key(fields: "id") @key(fields: "sku package") @key(fields: "sku variation { id }"){
+interface ProductItf implements SkuItf {
   id: ID! @tag(name: "hi-from-products")
   sku: String @tag(name: "hi-from-products")
   package: String
   variation: ProductVariation
   dimensions: ProductDimension
-
-  createdBy: User @provides(fields: "totalProductsCreated")
+  createdBy: User
 }
 
+interface SkuItf {
+  sku: String
+}
+
+type Product implements ProductItf & SkuItf @key(fields: "id") @key(fields: "sku package") @key(fields: "sku variation { id }"){
+  id: ID!
+  sku: String
+  package: String
+  variation: ProductVariation
+  dimensions: ProductDimension
+  createdBy: User @provides(fields: "totalProductsCreated")
+}
+enum ShippingClass {
+  STANDARD
+  EXPRESS
+}
 type ProductVariation {
   id: ID!
 }
-
 type ProductDimension {
   size: String
   weight: Float
-}
-
-extend type Query {
-  allProducts: [Product]
-  product(id: ID!): Product
 }
 
 extend type User @key(fields: "email") {
