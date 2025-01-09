@@ -41,7 +41,7 @@ jobs:
     if: needs.verify.outputs.ok == 'true'
     steps:
       - name: with PAT
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }}
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
