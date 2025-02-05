@@ -322,7 +322,7 @@ jobs:
       -
         name: create source repo pull request
         id: cpr
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.PAT }}
           committer: Supergraph Demo Bot <prasek+bot@gmail.com>
@@ -384,7 +384,7 @@ jobs:
       -
         name: create pull request
         id: cpr
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.PAT }}
           committer: Supergraph Demo Bot <prasek+bot@gmail.com>
